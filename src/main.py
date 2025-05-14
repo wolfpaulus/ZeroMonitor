@@ -9,4 +9,5 @@ neo.update_strip()  # Commit changes to the LEDs
 
 # Set the 5th LED to blue
 neo.set_led_color(4, 0, 0, 32)
+neo.set_led_color(5, 0, 32, 32)
 neo.update_strip()
