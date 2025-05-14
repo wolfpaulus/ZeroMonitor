@@ -46,4 +46,4 @@ sudo venv/bin/python" src/main.py &
 # 🔄 CI/CD-Style Auto-Update
 
 ZeroMonitor can automatically check for updates from GitHub and redeploy itself using a cron job.
-For more details, see the [./zero/README.md]() file.
+For more details, see the [./zero/README.md](./zero/README.md) file.
