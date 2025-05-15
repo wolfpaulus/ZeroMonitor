@@ -2,14 +2,12 @@
 
 set -e
 
-USER_HOME="/home/$(whoami)"
 REPO_URL="https://github.com/wolfpaulus/ZeroMonitor.git"
-REPO_DIR="$USER_HOME/ZeroMonitor"
+REPO_DIR="/opt/ZeroMonitor"
 BACKUP_DIR="${REPO_DIR}_$(date +%Y%m%d_%H%M%S)_backup"
 BRANCH="main"
 
-cd "$USER_HOME"
-
+cd "/opt"
 echo "== Checking for updates to ZeroMonitor =="
 
 if [ ! -d "$REPO_DIR" ]; then
@@ -32,7 +30,7 @@ echo "== Stopping running app (if any) =="
 pkill -f ZeroMonitor/app.py || true
 
 echo "== Backing up current version =="
-cd "$USER_HOME"
+cd "/opt"
 mv "$REPO_DIR" "$BACKUP_DIR"
 
 echo "== Cloning latest repo =="

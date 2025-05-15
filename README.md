@@ -32,7 +32,8 @@ Evaluates thresholds and maps state to color.
 Updates the corresponding NeoPixel LED.
 
 ## ⚙️ Installation
-Make sure SPI is enabled on the Raspberry Pi (via raspi-config).
+Make sure SPI is enabled on the Raspberry Pi (via raspi-config) 
+or check/add that following line to `/boot/firmware/config.txt`: dtparam=spi=on
 
 ```bash
 git clone https://github.com/wolfpaulus/ZeroMonitor.git
