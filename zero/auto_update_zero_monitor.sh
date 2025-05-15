@@ -45,4 +45,4 @@ pip install --upgrade pip
 pip install -r requirements.txt
 
 echo "== Launching app =="
-sudo -E env "PATH=$PATH" venv/bin/python ZeroMonitor/src/app.py &
+sudo -E env "PATH=$PATH" venv/bin/python ./src/app.py &
