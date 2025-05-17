@@ -32,4 +32,4 @@ if __name__ == "__main__":
                 neo.set_led_color(i, *COLORS[color])
             conn.close()
         neo.update_strip()
-        sleep(config.get("pause", 60))
+        sleep(config.get("pause", 5*60))

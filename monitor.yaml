@@ -37,3 +37,12 @@ hosts: # List of hosts to monitor
           - 60
           - 70
           - 80
+
+  - hostname: epsilon # Raspberry Zero 2
+    sensors:
+      - sensor: CpuTemperature
+        cmd: cat /sys/class/thermal/thermal_zone0/temp
+        values: # idle, normal, high
+          - 45
+          - 60
+          - 75
