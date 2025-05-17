@@ -27,7 +27,7 @@ git clone "$REPO_URL" || { echo "Git clone failed. Exiting."; exit 1; }
 # === Step 4: Set up virtual environment ===
 cd "$APP_DIR" || { echo "Directory $APP_DIR not found. Exiting."; exit 1; }
 echo "[4/6] Creating virtual environment..."
-$PYTHON_EXEC -m venv "$VENV_DIR"
+$PYTHON_EXEC -m venv "$VENV_DIR" --system-site-packages
 source "$VENV_DIR/bin/activate" || { echo "Failed to activate virtualenv. Exiting."; exit 1; }
 
 # === Step 5: Install dependencies ===

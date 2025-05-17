@@ -39,7 +39,7 @@ git clone --depth 1 --branch $BRANCH "$REPO_URL" "$REPO_DIR"
 cd "$REPO_DIR"
 
 echo "== Setting up virtual environment =="
-python3 -m venv venv
+python3 -m venv venv --system-site-packages
 source venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt

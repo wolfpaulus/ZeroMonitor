@@ -1,1 +1,3 @@
+pyyaml
 pi5neo
+paramiko
