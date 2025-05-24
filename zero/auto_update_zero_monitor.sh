@@ -1,5 +1,5 @@
 #!/bin/bash
-
+# # ZeroMonitor Auto Update Script
 set -e
 
 REPO_URL="https://github.com/wolfpaulus/ZeroMonitor.git"

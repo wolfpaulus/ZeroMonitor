@@ -11,6 +11,7 @@ from log import logger
 COLORS = [
     Color(0, 0, 16), Color(0, 10, 6), Color(0, 16, 0), Color(12, 4, 0), Color(16, 0, 0), Color(10, 0, 6)
 ]
+ROWS, COLS = 4, 8
 
 if __name__ == "__main__":
     try:
@@ -32,11 +33,11 @@ if __name__ == "__main__":
         for i, host in enumerate(config.get("hosts")):
             conn = Connection(host.get("hostname"))  # use with statement
             if conn and conn.client:
-                for s in host.get("sensors"):
+                for j, s in enumerate(host.get("sensors")):
                     sensor = Monitor.create_instance(s.get("sensor"), conn.client, s.get("cmd"), s.get("values"))
                     if sensor is not None:
                         color = sensor.probe()
-                        strip.setPixelColor(i, COLORS[color])
+                        strip.setPixelColor((ROWS -j) * COLS -i, COLORS[color])
             else:
                 logger.warning(f"{host} seems to be offline. Skipping sensor probe(s) for this host.")
             conn.close()
