@@ -3,10 +3,9 @@
     Author: Wolf Paulus <wolf@paulus.com>
 """
 import os
-import logging
 from abc import abstractmethod
 from paramiko import SSHClient, AutoAddPolicy, SSHConfig
-
+from log import logger
 
 class Connection:
     """ Base class for SSH connection """
@@ -30,7 +29,7 @@ class Connection:
                 timeout=5
             )
         except OSError as err:
-            logging.error(f"Error connecting to {hostname}: {err}")
+            logger.error(f"Error connecting to {hostname}: {err}")
             self.client = None
 
     def close(self) -> None:
@@ -96,7 +95,7 @@ class CpuTemperature(Monitor):
         """ Probe the CPU temperature in Celsius """
         stdin, stdout, stderr = self.client.exec_command(self.cmd)
         temp = int(stdout.read().decode()) / 1000
-        print(f"CPU temperature: {temp}°C")
+        logger.debug(f"CPU temperature: {temp}°C")
         return Monitor.match(temp, self.values)
 
 
@@ -105,7 +104,7 @@ class CpuUsage(Monitor):
         """ Probe the CPU Usage in percent """
         stdin, stdout, stderr = self.client.exec_command(self.cmd)
         usage = float(stdout.read().decode())
-        print(f"CPU usage: {usage} %")
+        logger.debug(f"CPU usage: {usage} %")
         return Monitor.match(usage, self.values)
 
 

@@ -1,25 +1,31 @@
 """
 Zero-Monitor Main Module
 """
+
 from time import sleep
 from yaml import safe_load
 from monitor import Connection, Monitor
 from rpi_ws281x import PixelStrip, Color
+from log import logger
 
 COLORS = [
     Color(0, 0, 16), Color(0, 10, 6), Color(0, 16, 0), Color(12, 4, 0), Color(16, 0, 0), Color(10, 0, 6)
 ]
 
-
 if __name__ == "__main__":
+    try:
+
+        with open("monitor.yaml") as file:
+            config = safe_load(file)
+            logger.info("Configuration loaded successfully.")
+    except OSError as err:
+        logger.error(f"Error loading configuration file. {err}")
+        exit(1)
     try:
         strip = PixelStrip(num=32, pin=18)
         strip.begin()
-        with open("monitor.yaml") as file:
-            config = safe_load(file)
-            print("Configuration loaded successfully.")
-    except OSError as err:
-        print(f"Error loading configuration file. {err}")
+    except Exception as err:
+        logger.error(f"Error connecting to neopixels: {err}")
         exit(1)
 
     while True:
@@ -30,10 +36,9 @@ if __name__ == "__main__":
                     sensor = Monitor.create_instance(s.get("sensor"), conn.client, s.get("cmd"), s.get("values"))
                     if sensor is not None:
                         color = sensor.probe()
-                        print(f"Sensor: {s.get('sensor')}, Color Index: {color}")
                         strip.setPixelColor(i, COLORS[color])
             else:
-                print(f"{host} seems to be offline. Skipping sensor probe for this host. . ")
+                logger.warning(f"{host} seems to be offline. Skipping sensor probe(s) for this host.")
             conn.close()
         strip.show()
         sleep(config.get("pause", 5*60))
