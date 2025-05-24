@@ -1,3 +1,6 @@
 pyyaml
-pi5neo
 paramiko
+pillow
+numpy
+spydev
+rpi_ws281x

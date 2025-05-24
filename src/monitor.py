@@ -3,8 +3,8 @@
     Author: Wolf Paulus <wolf@paulus.com>
 """
 import os
+import logging
 from abc import abstractmethod
-
 from paramiko import SSHClient, AutoAddPolicy, SSHConfig
 
 
@@ -21,17 +21,23 @@ class Connection:
         self.config.parse(open(os.path.expanduser("~/.ssh/config")))
         user_config = self.config.lookup(hostname)
         key_filename = os.path.expanduser(user_config["identityfile"][0])
-        self.client.connect(
-            hostname=user_config["hostname"],
-            username=user_config["user"],
-            port=int(user_config["port"]),
-            key_filename=key_filename,
-        )
+        try:
+            self.client.connect(
+                hostname=user_config["hostname"],
+                username=user_config["user"],
+                port=int(user_config["port"]),
+                key_filename=key_filename,
+                timeout=5
+            )
+        except OSError as err:
+            logging.error(f"Error connecting to {hostname}: {err}")
+            self.client = None
 
     def close(self) -> None:
         """ Close the SSH connection """
-        self.client.close()
-        self.client = None
+        if self.client is not None:
+            self.client.close()
+            self.client = None
 
 
 class Monitor:
@@ -55,7 +61,7 @@ class Monitor:
         except KeyError:
             return None
 
-    def __init__(self, client: SSHClient, cmd:str, values: list[int]) -> None:
+    def __init__(self, client: SSHClient, cmd: str, values: list[int]) -> None:
         """ Initialize the Monitor class with a hostname """
         self.client = client
         self.cmd = cmd
@@ -94,23 +100,47 @@ class CpuTemperature(Monitor):
         return Monitor.match(temp, self.values)
 
 
+class CpuUsage(Monitor):
+    def probe(self) -> int:
+        """ Probe the CPU Usage in percent """
+        stdin, stdout, stderr = self.client.exec_command(self.cmd)
+        usage = float(stdout.read().decode())
+        print(f"CPU usage: {usage} %")
+        return Monitor.match(usage, self.values)
+
+
 if __name__ == "__main__":
-    v1 = [50,65,80]
-    v2 = [60,70,80]
-    cmd1="cat /sys/class/thermal/thermal_zone2/temp"
-    cmd2="cat /sys/class/thermal/thermal_zone0/temp"
+    v1 = [50, 65, 80]
+    v2 = [60, 70, 80]
+    cmd1 = "cat /sys/class/thermal/thermal_zone2/temp"
+    cmd2 = "cat /sys/class/thermal/thermal_zone0/temp"
+    cmd3 = 'mpstat -P ALL 1 1 | awk \'$1 == "Average:" && $2 == "all" { print 100 - $NF }\''
+
     conn = Connection("alpha")
-    monitor = CpuTemperature(conn.client,cmd1, v1)
-    print(monitor.probe())
+    if conn.client:
+        monitor = CpuTemperature(conn.client, cmd1, v1)
+        print(monitor.probe())
+        monitor = CpuUsage(conn.client, cmd3, v1)
+        print(monitor.probe())
+        conn.close()
     conn = Connection("beta")
-    monitor = CpuTemperature(conn.client, cmd1, v1)
-    print(monitor.probe())
-    conn.close()
+    if conn.client:
+        monitor = CpuTemperature(conn.client, cmd1, v1)
+        print(monitor.probe())
+        monitor = CpuUsage(conn.client, cmd3, v1)
+        print(monitor.probe())
+        conn.close()
     conn = Connection("apollo")
-    monitor = CpuTemperature(conn.client, cmd2, v2)
-    print(monitor.probe())
-    conn.close()
+    if conn.client:
+        monitor = CpuTemperature(conn.client, cmd2, v2)
+        print(monitor.probe())
+        monitor = CpuUsage(conn.client, cmd3, v1)
+        print(monitor.probe())
+        conn.close()
     conn = Connection("artemis")
-    monitor = CpuTemperature(conn.client, cmd2, v2)
-    print(monitor.probe())
-    conn.close()
+    if conn.client:
+        monitor = CpuTemperature(conn.client, cmd2, v2)
+        print(monitor.probe())
+        monitor = CpuUsage(conn.client, cmd3, v1)
+        print(monitor.probe())
+        conn.close()

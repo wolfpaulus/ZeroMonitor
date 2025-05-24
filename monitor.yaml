@@ -3,6 +3,7 @@ pixels: 8 # Number of pixels in the strip
 brightness: 1 # Brightness of the strip (1-16)
 hosts: # List of hosts to monitor
   - hostname: alpha # Intel NUC Core i5
+    specification: NUC CoreI5
     sensors:
       - sensor: CpuTemperature
         cmd: cat /sys/class/thermal/thermal_zone2/temp
@@ -12,6 +13,7 @@ hosts: # List of hosts to monitor
           - 80
 
   - hostname: beta # Intel NUC Core i3
+    specification: NUC CoreI3
     sensors:
       - sensor: CpuTemperature
         cmd: cat /sys/class/thermal/thermal_zone2/temp
@@ -21,6 +23,7 @@ hosts: # List of hosts to monitor
           - 80
 
   - hostname: apollo # Raspberry Pi 5
+    specification: RPi5 8GB
     sensors:
       - sensor: CpuTemperature
         cmd: cat /sys/class/thermal/thermal_zone0/temp
@@ -30,6 +33,7 @@ hosts: # List of hosts to monitor
           - 80
 
   - hostname: artemis # Raspberry Pi 5
+    specification: RPi5 16GB
     sensors:
       - sensor: CpuTemperature
         cmd: cat /sys/class/thermal/thermal_zone0/temp
@@ -38,7 +42,18 @@ hosts: # List of hosts to monitor
           - 70
           - 80
 
+  - hostname: delta # Raspberry Zero
+    specification: RPi Zero
+    sensors:
+      - sensor: CpuTemperature
+        cmd: cat /sys/class/thermal/thermal_zone0/temp
+        values: # idle, normal, high
+          - 45
+          - 60
+          - 75
+
   - hostname: epsilon # Raspberry Zero 2
+    specification: RPi Zero 2
     sensors:
       - sensor: CpuTemperature
         cmd: cat /sys/class/thermal/thermal_zone0/temp
