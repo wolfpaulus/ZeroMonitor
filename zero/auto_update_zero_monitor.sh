@@ -10,7 +10,6 @@ TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 BACKUP_DIR="/opt/ZeroMonitor_backup_$TIMESTAMP"
 LOG_PREFIX="[$(date '+%Y-%m-%d %H:%M:%S')]"
 APP_PATH="$REPO_DIR/src/main.py"
-PYTHON="$REPO_DIR/venv/bin/python"
 LOG_FILE="/var/log/zero_monitor_runtime.log"
 
 log() {
@@ -18,15 +17,14 @@ log() {
 }
 
 ensure_venv() {
-    if [ ! -x "$PYTHON" ]; then
+    if [ ! -x "$REPO_DIR/venv/bin/python" ]; then
         log "== Setting up virtual environment =="
         python3 -m venv "$REPO_DIR/venv" --system-site-packages
-        source "$REPO_DIR/venv/bin/activate"
-        pip install --upgrade pip
-        pip install -r "$REPO_DIR/requirements.txt"
+        "$REPO_DIR/venv/bin/pip" install --upgrade pip
+        "$REPO_DIR/venv/bin/pip" install -r "$REPO_DIR/requirements.txt"
     fi
+    PYTHON="$REPO_DIR/venv/bin/python"
 }
-
 is_app_running() {
     pgrep -f "$APP_PATH" >/dev/null
 }
@@ -34,6 +32,7 @@ is_app_running() {
 start_app() {
     log "== Starting ZeroMonitor app =="
     nohup "$PYTHON" "$APP_PATH" >> "$LOG_FILE" 2>&1 &
+    disown
 }
 
 cd /opt
