@@ -5,95 +5,131 @@ hosts: # List of hosts to monitor
   - hostname: alpha # Intel NUC Core i5
     specification: NUC CoreI5
     sensors:
-      - sensor: CpuTemperature
-        cmd: cat /sys/class/thermal/thermal_zone2/temp # CPU package temperature
-        values: # idle, normal, high
-          - 50
-          - 65
-          - 80
       - sensor: CpuUsage
         cmd: mpstat -P ALL 1 1 | awk '$1 == "Average:" && $2 == "all" { print 100 - $NF }' # CPU usage percentage
         values: # idle, normal, high
           - 3
           - 15
           - 30
+      - sensor: CpuTemperature
+        cmd: cat /sys/class/thermal/thermal_zone2/temp # CPU package temperature
+        values: # idle, normal, high
+          - 50
+          - 65
+          - 80
+      - sensor: MemoryUsage
+        cmd: egrep "MemTotal|MemAvailable" /proc/meminfo
+        values: # idle, normal, high
+          - 25
+          - 50
+          - 75
 
   - hostname: beta # Intel NUC Core i3
     specification: NUC CoreI3
     sensors:
+      - sensor: CpuUsage
+        cmd: mpstat -P ALL 1 1 | awk '$1 == "Average:" && $2 == "all" { print 100 - $NF }' # CPU usage percentage
+        values: # idle, normal, high
+          - 3
+          - 15
+          - 30
       - sensor: CpuTemperature
         cmd: cat /sys/class/thermal/thermal_zone2/temp # CPU package temperature
         values: # idle, normal, high
           - 50
           - 65
           - 80
-      - sensor: CpuUsage
-        cmd: mpstat -P ALL 1 1 | awk '$1 == "Average:" && $2 == "all" { print 100 - $NF }' # CPU usage percentage
+      - sensor: MemoryUsage
+        cmd: egrep "MemTotal|MemAvailable" /proc/meminfo
         values: # idle, normal, high
-          - 3
-          - 15
-          - 30
+          - 25
+          - 50
+          - 75
 
   - hostname: apollo # Raspberry Pi 5
     specification: RPi5 8GB
     sensors:
-      - sensor: CpuTemperature
-        cmd: cat /sys/class/thermal/thermal_zone0/temp
-        values: # idle, normal, high
-          - 60
-          - 70
-          - 80
       - sensor: CpuUsage
         cmd: mpstat -P ALL 1 1 | awk '$1 == "Average:" && $2 == "all" { print 100 - $NF }' # CPU usage percentage
         values: # idle, normal, high
           - 3
           - 15
           - 30
+      - sensor: CpuTemperature
+        cmd: cat /sys/class/thermal/thermal_zone0/temp
+        values: # idle, normal, high
+          - 60
+          - 70
+          - 80
+      - sensor: MemoryUsage
+        cmd: egrep "MemTotal|MemAvailable" /proc/meminfo
+        values: # idle, normal, high
+          - 25
+          - 50
+          - 75
 
   - hostname: artemis # Raspberry Pi 5
     specification: RPi5 16GB
     sensors:
+      - sensor: CpuUsage
+        cmd: mpstat -P ALL 1 1 | awk '$1 == "Average:" && $2 == "all" { print 100 - $NF }' # CPU usage percentage
+        values: # idle, normal, high
+          - 3
+          - 15
+          - 30
       - sensor: CpuTemperature
         cmd: cat /sys/class/thermal/thermal_zone0/temp
         values: # idle, normal, high
           - 60
           - 70
           - 80
-      - sensor: CpuUsage
-        cmd: mpstat -P ALL 1 1 | awk '$1 == "Average:" && $2 == "all" { print 100 - $NF }' # CPU usage percentage
+      - sensor: MemoryUsage
+        cmd: egrep "MemTotal|MemAvailable" /proc/meminfo
         values: # idle, normal, high
-          - 3
-          - 15
-          - 30
+          - 25
+          - 50
+          - 75
 
   - hostname: delta # Raspberry Zero
     specification: RPi Zero
     sensors:
-      - sensor: CpuTemperature
-        cmd: cat /sys/class/thermal/thermal_zone0/temp
-        values: # idle, normal, high
-          - 45
-          - 60
-          - 75
       - sensor: CpuUsage
         cmd: mpstat -P ALL 1 1 | awk '$1 == "Average:" && $2 == "all" { print 100 - $NF }' # CPU usage percentage
         values: # idle, normal, high
           - 3
           - 15
           - 30
+      - sensor: CpuTemperature
+        cmd: cat /sys/class/thermal/thermal_zone0/temp
+        values: # idle, normal, high
+          - 45
+          - 60
+          - 75
+      - sensor: MemoryUsage
+        cmd: egrep "MemTotal|MemAvailable" /proc/meminfo
+        values: # idle, normal, high
+          - 25
+          - 50
+          - 75
 
   - hostname: epsilon # Raspberry Zero 2
     specification: RPi Zero 2
     sensors:
-      - sensor: CpuTemperature
-        cmd: cat /sys/class/thermal/thermal_zone0/temp
-        values: # idle, normal, high
-          - 45
-          - 60
-          - 75
       - sensor: CpuUsage
         cmd: mpstat -P ALL 1 1 | awk '$1 == "Average:" && $2 == "all" { print 100 - $NF }' # CPU usage percentage
         values: # idle, normal, high
           - 3
           - 15
           - 30
+      - sensor: CpuTemperature
+        cmd: cat /sys/class/thermal/thermal_zone0/temp
+        values: # idle, normal, high
+          - 45
+          - 60
+          - 75
+      - sensor: MemoryUsage
+        cmd: egrep "MemTotal|MemAvailable" /proc/meminfo
+        values: # idle, normal, high
+          - 25
+          - 50
+          - 75

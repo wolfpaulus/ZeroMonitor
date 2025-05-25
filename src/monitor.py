@@ -107,6 +107,22 @@ class CpuUsage(Monitor):
         logger.debug(f"CPU usage: {usage} %")
         return Monitor.match(usage, self.values)
 
+class MemoryUsage(Monitor):
+    """ Monitor class for Memory usage
+    Expect something like:
+        MemTotal:         437984 kB
+        MemAvailable:     340788 kB
+    """
+    def probe(self) -> int:
+        """ Probe the Memory """
+        stdin, stdout, stderr = self.client.exec_command(self.cmd)
+        texts = stdout.read().decode().split(":")
+        total = int(texts[1].strip().split()[0])
+        available = int(texts[2].strip().split()[0])
+        usage = round((total - available)  * 100 / total + 0.5)  # Round to nearest integer
+        print(f"Memory usage: {usage} %")
+        logger.debug(f"Memory usage: {usage} %")
+        return Monitor.match(usage, self.values)
 
 if __name__ == "__main__":
     v1 = [50, 65, 80]
