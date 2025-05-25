@@ -51,6 +51,7 @@ if __name__ == "__main__":
             conn = Connection(host.get("hostname"))  # use with statement
             if conn and conn.client:
                 for i, s in enumerate(host.get("sensors")):
+                    strip.setPixelColor((ROWS - i) * COLS - h - 1, Color(0, 0, 0))
                     sensor = Monitor.create_instance(s.get("sensor"), conn.client, s.get("cmd"), s.get("values"))
                     if sensor is not None:
                         color = sensor.probe()

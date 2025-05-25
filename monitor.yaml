@@ -23,6 +23,12 @@ hosts: # List of hosts to monitor
           - 25
           - 50
           - 75
+      - sensor: DiskUsage
+        cmd: df /
+        values: # idle, normal, high
+          - 25
+          - 50
+          - 75
 
   - hostname: beta # Intel NUC Core i3
     specification: NUC CoreI3
@@ -41,6 +47,12 @@ hosts: # List of hosts to monitor
           - 80
       - sensor: MemoryUsage
         cmd: free
+        values: # idle, normal, high
+          - 25
+          - 50
+          - 75
+      - sensor: DiskUsage
+        cmd: df /
         values: # idle, normal, high
           - 25
           - 50
@@ -67,6 +79,12 @@ hosts: # List of hosts to monitor
           - 25
           - 50
           - 75
+      - sensor: DiskUsage
+        cmd: df /
+        values: # idle, normal, high
+          - 25
+          - 50
+          - 75
 
   - hostname: artemis # Raspberry Pi 5
     specification: RPi5 16GB
@@ -85,6 +103,12 @@ hosts: # List of hosts to monitor
           - 80
       - sensor: MemoryUsage
         cmd: free
+        values: # idle, normal, high
+          - 25
+          - 50
+          - 75
+      - sensor: DiskUsage
+        cmd: df /
         values: # idle, normal, high
           - 25
           - 50
@@ -111,6 +135,12 @@ hosts: # List of hosts to monitor
           - 25
           - 50
           - 75
+      - sensor: DiskUsage
+        cmd: df /
+        values: # idle, normal, high
+          - 25
+          - 50
+          - 75
 
   - hostname: delta # Raspberry Zero
     specification: RPi Zero
@@ -133,6 +163,12 @@ hosts: # List of hosts to monitor
           - 25
           - 50
           - 75
+      - sensor: DiskUsage
+        cmd: df /
+        values: # idle, normal, high
+          - 25
+          - 50
+          - 75
 
   - hostname: epsilon # Raspberry Zero 2
     specification: RPi Zero 2
@@ -151,6 +187,12 @@ hosts: # List of hosts to monitor
           - 75
       - sensor: MemoryUsage
         cmd: free
+        values: # idle, normal, high
+          - 25
+          - 50
+          - 75
+      - sensor: DiskUsage
+        cmd: df /
         values: # idle, normal, high
           - 25
           - 50

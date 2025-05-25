@@ -131,6 +131,23 @@ class MemoryUsage(Monitor):
         logger.debug(f"Memory usage: {usage} %")
         return Monitor.match(usage, self.values)
 
+class DiskUsage(Monitor):
+    """ Monitor class for Disk usage
+    Expect something like:
+        Filesystem     1K-blocks    Used Available Use% Mounted on
+        /dev/mmcblk0p2  14719576 3318572  10753180  24% /
+    """
+    def probe(self) -> int:
+        """ Probe the Disk usage """
+        stdin, stdout, stderr = self.client.exec_command(self.cmd)
+        texts = stdout.read().decode().split("\n")
+        if len(texts) < 2:
+            logger.error("Disk usage information is not available.")
+            return -1
+        usage = int(texts[-1].split()[-2])[:-1]  # Get the second last value (Used)
+        logger.debug(f"Disk usage: {usage} %")
+        return Monitor.match(usage, self.values)
+
 if __name__ == "__main__":
     v1 = [50, 65, 80]
     v2 = [60, 70, 80]
