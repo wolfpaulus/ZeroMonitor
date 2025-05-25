@@ -22,7 +22,7 @@ COLORS = [
 # 07 06 05 04 03 02 01 00
 
 ROWS, COLS = 4, 8
-SLEEP = 0.5
+SLEEP = 1
 if __name__ == "__main__":
     try:
         with open("monitor.yaml") as file:
@@ -60,4 +60,4 @@ if __name__ == "__main__":
             # Update the strip with the new pixel colors
             strip.show()
             sleep(SLEEP)
-        sleep(config.get("pause", 5 * 60))
+        sleep(SLEEP)
