@@ -22,7 +22,7 @@ COLORS = [
 # 07 06 05 04 03 02 01 00
 
 ROWS, COLS = 4, 8
-SLEEP = 0.05
+SLEEP = 0.5
 if __name__ == "__main__":
     try:
         with open("monitor.yaml") as file:
