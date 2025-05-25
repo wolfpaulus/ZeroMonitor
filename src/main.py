@@ -22,7 +22,7 @@ COLORS = [
 # 07 06 05 04 03 02 01 00
 
 ROWS, COLS = 4, 8
-
+SLEEP = 0.05
 if __name__ == "__main__":
     try:
         with open("monitor.yaml") as file:
@@ -39,7 +39,6 @@ if __name__ == "__main__":
         exit(1)
 
     while True:
-        pixels = [Color(0, 0, 0)] * (ROWS * COLS)
         for h, host in enumerate(config.get("hosts")):
             conn = Connection(host.get("hostname"))  # use with statement
             if conn and conn.client:
@@ -47,11 +46,16 @@ if __name__ == "__main__":
                     sensor = Monitor.create_instance(s.get("sensor"), conn.client, s.get("cmd"), s.get("values"))
                     if sensor is not None:
                         color = sensor.probe()
-                        pixels[(ROWS - i) * COLS - h - 1] = COLORS[color]
+                        strip.setPixelColor((ROWS - i) * COLS - h - 1, COLORS[color])
+                    else:
+                        logger.error(f"Sensor {s.get('sensor')} not found. Skipping sensor probe for this host.")
+                        strip.setPixelColor((ROWS - i) * COLS - h - 1, Color(0, 0, 0))
             else:
+                for i, s in enumerate(host.get("sensors")):
+                    strip.setPixelColor((ROWS - i) * COLS - h - 1, Color(0, 0, 0))
                 logger.warning(f"{host} seems to be offline. Skipping sensor probe(s) for this host.")
             conn.close()
-        for i in range(len(pixels)):
-            strip.setPixelColor(i, pixels[i])
-        strip.show()
+            # Update the strip with the new pixel colors
+            strip.show()
+            sleep(SLEEP)
         sleep(config.get("pause", 5 * 60))
