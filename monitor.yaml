@@ -14,9 +14,9 @@ hosts: # List of hosts to monitor
       - sensor: CpuUsage
         cmd: mpstat -P ALL 1 1 | awk '$1 == "Average:" && $2 == "all" { print 100 - $NF }' # CPU usage percentage
         values: # idle, normal, high
-          - 0
-          - 20
-          - 50
+          - 3
+          - 15
+          - 30
 
   - hostname: beta # Intel NUC Core i3
     specification: NUC CoreI3
@@ -30,9 +30,9 @@ hosts: # List of hosts to monitor
       - sensor: CpuUsage
         cmd: mpstat -P ALL 1 1 | awk '$1 == "Average:" && $2 == "all" { print 100 - $NF }' # CPU usage percentage
         values: # idle, normal, high
-          - 0
-          - 20
-          - 50
+          - 3
+          - 15
+          - 30
 
   - hostname: apollo # Raspberry Pi 5
     specification: RPi5 8GB
@@ -46,9 +46,9 @@ hosts: # List of hosts to monitor
       - sensor: CpuUsage
         cmd: mpstat -P ALL 1 1 | awk '$1 == "Average:" && $2 == "all" { print 100 - $NF }' # CPU usage percentage
         values: # idle, normal, high
-          - 0
-          - 20
-          - 50
+          - 3
+          - 15
+          - 30
 
   - hostname: artemis # Raspberry Pi 5
     specification: RPi5 16GB
@@ -59,6 +59,12 @@ hosts: # List of hosts to monitor
           - 60
           - 70
           - 80
+      - sensor: CpuUsage
+        cmd: mpstat -P ALL 1 1 | awk '$1 == "Average:" && $2 == "all" { print 100 - $NF }' # CPU usage percentage
+        values: # idle, normal, high
+          - 3
+          - 15
+          - 30
 
   - hostname: delta # Raspberry Zero
     specification: RPi Zero
@@ -69,6 +75,12 @@ hosts: # List of hosts to monitor
           - 45
           - 60
           - 75
+      - sensor: CpuUsage
+        cmd: mpstat -P ALL 1 1 | awk '$1 == "Average:" && $2 == "all" { print 100 - $NF }' # CPU usage percentage
+        values: # idle, normal, high
+          - 3
+          - 15
+          - 30
 
   - hostname: epsilon # Raspberry Zero 2
     specification: RPi Zero 2
@@ -82,6 +94,6 @@ hosts: # List of hosts to monitor
       - sensor: CpuUsage
         cmd: mpstat -P ALL 1 1 | awk '$1 == "Average:" && $2 == "all" { print 100 - $NF }' # CPU usage percentage
         values: # idle, normal, high
-          - 0
-          - 20
-          - 50
+          - 3
+          - 15
+          - 30

@@ -103,7 +103,7 @@ class CpuUsage(Monitor):
     def probe(self) -> int:
         """ Probe the CPU Usage in percent """
         stdin, stdout, stderr = self.client.exec_command(self.cmd)
-        usage = float(stdout.read().decode())
+        usage = round(float(stdout.read().decode()) + 0.5)  # Round to nearest integer
         logger.debug(f"CPU usage: {usage} %")
         return Monitor.match(usage, self.values)
 
