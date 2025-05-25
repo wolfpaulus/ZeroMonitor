@@ -1,48 +1,92 @@
 #!/bin/bash
-# # ZeroMonitor Auto Update Script
-set -e
+# ZeroMonitor Auto Update and Launcher
+
+set -euo pipefail
 
 REPO_URL="https://github.com/wolfpaulus/ZeroMonitor.git"
 REPO_DIR="/opt/ZeroMonitor"
-BACKUP_DIR="${REPO_DIR}_$(date +%Y%m%d_%H%M%S)_backup"
 BRANCH="main"
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+BACKUP_DIR="/opt/ZeroMonitor_backup_$TIMESTAMP"
+LOG_PREFIX="[$(date '+%Y-%m-%d %H:%M:%S')]"
+APP_PATH="$REPO_DIR/src/main.py"
+PYTHON="$REPO_DIR/venv/bin/python"
+LOG_FILE="/var/log/zero_monitor_runtime.log"
 
-cd "/opt"
-echo "== Checking for updates to ZeroMonitor =="
+log() {
+    echo "$LOG_PREFIX $1"
+}
 
-if [ ! -d "$REPO_DIR" ]; then
-    echo "Cloning for the first time..."
-    git clone --depth 1 --branch $BRANCH "$REPO_URL" "$REPO_DIR"
-    cd "$REPO_DIR"
-else
-    cd "$REPO_DIR"
-    echo "Fetching latest changes..."
-    git fetch origin $BRANCH
-    CHANGES=$(git diff HEAD origin/$BRANCH --name-only | grep '^src/')
-    if [ -z "$CHANGES" ]; then
-        echo "No changes in src/, skipping update."
-        exit 0
+ensure_venv() {
+    if [ ! -x "$PYTHON" ]; then
+        log "== Setting up virtual environment =="
+        python3 -m venv "$REPO_DIR/venv" --system-site-packages
+        source "$REPO_DIR/venv/bin/activate"
+        pip install --upgrade pip
+        pip install -r "$REPO_DIR/requirements.txt"
     fi
-    echo "Changes found: $CHANGES"
+}
+
+is_app_running() {
+    pgrep -f "$APP_PATH" >/dev/null
+}
+
+start_app() {
+    log "== Starting ZeroMonitor app =="
+    nohup "$PYTHON" "$APP_PATH" >> "$LOG_FILE" 2>&1 &
+}
+
+cd /opt
+log "== Checking for updates to ZeroMonitor =="
+
+if [ ! -d "$REPO_DIR/.git" ]; then
+    log "Initial clone..."
+    git clone --depth 1 --branch "$BRANCH" "$REPO_URL" "$REPO_DIR"
+    ensure_venv
+    start_app
+    exit 0
 fi
 
-echo "== Stopping running app (if any) =="
-pkill -f ZeroMonitor/app.py || true
+cd "$REPO_DIR"
+git fetch origin "$BRANCH"
+CHANGES=$(git diff --name-only HEAD origin/"$BRANCH" | grep '^src/' || true)
 
-echo "== Backing up current version =="
-cd "/opt"
+if [ -z "$CHANGES" ]; then
+    log "No updates detected."
+    if is_app_running; then
+        log "App is already running."
+    else
+        log "App is NOT running — starting it..."
+        ensure_venv
+        start_app
+    fi
+    exit 0
+fi
+
+log "Updates detected. Applying update..."
+
+log "== Stopping running app (if any) =="
+pkill -f "$APP_PATH" || true
+
+log "== Backing up current version =="
+cd /opt
 mv "$REPO_DIR" "$BACKUP_DIR"
+# Keep only the 3 most recent backups, delete older ones
+BACKUPS=(/opt/ZeroMonitor_backup_*)
+NUM_BACKUPS=${#BACKUPS[@]}
 
-echo "== Cloning latest repo =="
-git clone --depth 1 --branch $BRANCH "$REPO_URL" "$REPO_DIR"
+if [ "$NUM_BACKUPS" -gt 3 ]; then
+    log "Cleaning up old backups..."
+    # Sort by modification time and delete oldest ones
+    ls -dt /opt/ZeroMonitor_backup_* | tail -n +4 | while read -r old; do
+        log "Deleting old backup: $old"
+        rm -rf "$old"
+    done
+fi
+
+log "== Cloning latest repo =="
+git clone --depth 1 --branch "$BRANCH" "$REPO_URL" "$REPO_DIR"
 
 cd "$REPO_DIR"
-
-echo "== Setting up virtual environment =="
-python3 -m venv venv --system-site-packages
-source venv/bin/activate
-pip install --upgrade pip
-pip install -r requirements.txt
-
-echo "== Launching app =="
-sudo -E env "PATH=$PATH" venv/bin/python src/main.py &
+ensure_venv
+start_app
