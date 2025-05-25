@@ -31,6 +31,7 @@ is_app_running() {
 
 start_app() {
     log "== Starting ZeroMonitor app =="
+    cd "$REPO_DIR"
     nohup "$PYTHON" "$APP_PATH" >> "$LOG_FILE" 2>&1 &
     disown
 }
@@ -85,7 +86,5 @@ fi
 
 log "== Cloning latest repo =="
 git clone --depth 1 --branch "$BRANCH" "$REPO_URL" "$REPO_DIR"
-
-cd "$REPO_DIR"
 ensure_venv
 start_app
