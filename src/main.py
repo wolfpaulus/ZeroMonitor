@@ -32,7 +32,7 @@ if __name__ == "__main__":
         logger.error(f"Error loading configuration file. {err}")
         exit(1)
     try:
-        strip = PixelStrip(num=32, pin=18, freq_hz=800_000, dma=10, invert=False, brightness=16, channel=0)
+        strip = PixelStrip(num=32, pin=18, freq_hz=800_000, dma=10, invert=False, brightness=255, channel=0)
         strip.begin()
     except Exception as err:
         logger.error(f"Error connecting to neopixels: {err}")
@@ -52,12 +52,11 @@ if __name__ == "__main__":
                         strip.setPixelColor((ROWS - i) * COLS - h - 1, Color(0, 0, 0))
                     strip.show()
                     sleep(SLEEP)
+                conn.close()
             else:
+                logger.warning(f"{host} seems to be offline. Skipping sensor probe(s) for this host.")
                 for i, s in enumerate(host.get("sensors")):
                     strip.setPixelColor((ROWS - i) * COLS - h - 1, Color(0, 0, 0))
-                logger.warning(f"{host} seems to be offline. Skipping sensor probe(s) for this host.")
-            conn.close()
-            # Update the strip with the new pixel colors
-            strip.show()
-            sleep(SLEEP)
+                strip.show()
+                sleep(SLEEP)
         sleep(SLEEP)
