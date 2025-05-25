@@ -144,7 +144,8 @@ class DiskUsage(Monitor):
         if len(texts) < 2:
             logger.error("Disk usage information is not available.")
             return -1
-        usage = int(texts[-1].split()[-2][:-1])  # Get the second last value (Used)
+        print(f"Disk usage: {texts[1].split()} %")
+        usage = int(texts[1].split()[-2][:-1])  # Get the second last value (Used)
         logger.debug(f"Disk usage: {usage} %")
         return Monitor.match(usage, self.values)
 
