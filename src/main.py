@@ -32,7 +32,7 @@ if __name__ == "__main__":
         logger.error(f"Error loading configuration file. {err}")
         exit(1)
     try:
-        strip = PixelStrip(num=32, pin=18)
+        strip = PixelStrip(num=32, pin=18, freq_hz=800_000, dma=10, invert=False, brightness=16, channel=0)
         strip.begin()
     except Exception as err:
         logger.error(f"Error connecting to neopixels: {err}")
