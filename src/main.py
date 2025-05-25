@@ -38,14 +38,16 @@ if __name__ == "__main__":
         logger.error(f"Error loading configuration file. {err}")
         exit(1)
     try:
-        strip = PixelStrip(num=32, pin=18, freq_hz=800_000, dma=10, invert=False, brightness=255, channel=0)
+        strip = PixelStrip(num=32, pin=18, freq_hz=800_000, dma=10, invert=False, brightness=64, channel=0)
         strip.begin()
     except Exception as err:
         logger.error(f"Error connecting to neopixels: {err}")
         exit(1)
 
     while True:
-        for h, host in enumerate(config.get("hosts")):
+        for h, host in enumerate(config.get("hosts")): # iterate over hosts currently 7 configured
+            color = Color(2,8,2) if h%2 == 0 else Color(0, 0, 0)
+            strip.setPixelColor(0,color)
             conn = Connection(host.get("hostname"))  # use with statement
             if conn and conn.client:
                 for i, s in enumerate(host.get("sensors")):

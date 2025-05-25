@@ -90,11 +90,11 @@ hosts: # List of hosts to monitor
           - 50
           - 75
 
-  - hostname: omega # INTEL Atom C2538 16 GB
+  - hostname: omega # INTEL Atom C2538 16 GB (req. # synogear install)
     specification: INTL Atom
     sensors:
       - sensor: CpuUsage
-        cmd: mpstat -P ALL 1 1 | awk '$1 == "Average:" && $2 == "all" { print 100 - $NF }' # CPU usage percentage
+        cmd: /var/packages/DiagnosisTool/target/tool/mpstat -P ALL 1 1 | awk '$1 == "Average:" && $2 == "all" { print 100 - $NF }' # CPU usage percentage
         values: # idle, normal, high
           - 3
           - 15
