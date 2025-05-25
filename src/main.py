@@ -50,6 +50,8 @@ if __name__ == "__main__":
                     else:
                         logger.error(f"Sensor {s.get('sensor')} not found. Skipping sensor probe for this host.")
                         strip.setPixelColor((ROWS - i) * COLS - h - 1, Color(0, 0, 0))
+                    strip.show()
+                    sleep(SLEEP)
             else:
                 for i, s in enumerate(host.get("sensors")):
                     strip.setPixelColor((ROWS - i) * COLS - h - 1, Color(0, 0, 0))
