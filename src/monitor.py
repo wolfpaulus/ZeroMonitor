@@ -74,7 +74,9 @@ class Monitor:
     @staticmethod
     def match(v: float | int, values: list[int]) -> int:
         """ Match the value with the corresponding color index"""
-        if v <= values[0]:
+        if v < 0:
+            return -1
+        elif v <= values[0]:
             return 0
         elif v <= values[1] - (values[1] - values[0]) / 2:
             return 1
@@ -110,16 +112,21 @@ class CpuUsage(Monitor):
 class MemoryUsage(Monitor):
     """ Monitor class for Memory usage
     Expect something like:
-        MemTotal:         437984 kB
-        MemAvailable:     340788 kB
+                      total        used        free      shared  buff/cache   available
+        Mem:       16425908      812996    11896784      142728     3716128    15249844
+        Swap:      11956140           0    11956140
+        u     = x
+        total = 100
     """
     def probe(self) -> int:
         """ Probe the Memory """
         stdin, stdout, stderr = self.client.exec_command(self.cmd)
-        texts = stdout.read().decode().split(":")
-        total = int(texts[1].strip().split()[0])
-        available = int(texts[2].strip().split()[0])
-        usage = round((total - available)  * 100 / total + 0.5)  # Round to nearest integer
+        texts = stdout.read().decode().split("\n")
+        if len(texts) < 3:
+            logger.error("Memory usage information is not available.")
+            return -1
+        total, used = int(texts[1].split()[1]), int(texts[1].split()[2])
+        usage = round(used * 100 / total + 0.5)  # Round to nearest integer
         print(f"Memory usage: {usage} %")
         logger.debug(f"Memory usage: {usage} %")
         return Monitor.match(usage, self.values)

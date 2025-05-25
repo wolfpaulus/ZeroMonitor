@@ -9,7 +9,13 @@ from rpi_ws281x import PixelStrip, Color
 from log import logger
 
 COLORS = [
-    Color(0, 0, 16), Color(0, 10, 6), Color(0, 16, 0), Color(12, 4, 0), Color(16, 0, 0), Color(10, 0, 6)
+    Color(0, 0, 16),
+    Color(0, 10, 6),
+    Color(0, 16, 0),
+    Color(12, 4, 0),
+    Color(16, 0, 0),
+    Color(10, 0, 6),
+    Color(0, 0, 0),
 ]
 # ROWS = 4 COLS = 8
 # Each host has one column
