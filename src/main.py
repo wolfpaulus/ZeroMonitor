@@ -11,6 +11,16 @@ from log import logger
 COLORS = [
     Color(0, 0, 16), Color(0, 10, 6), Color(0, 16, 0), Color(12, 4, 0), Color(16, 0, 0), Color(10, 0, 6)
 ]
+# ROWS = 4 COLS = 8
+# Each host has one column
+# host = h : 0 .. 7
+# sensor = i : 0 .. 3
+#
+# 31 30 29 28 27 26 25 24   x = ROWS * COLS - 1 - h - (i * COLS)
+# 23 22 21 20 19 18 17 16   == (ROWS - i) * COLS - h - 1
+# 15 14 13 12 11 10 09 08.  E.g. h = 2, i = 3 : (4 - 3)*8 - 2 - 1 = 4
+# 07 06 05 04 03 02 01 00
+
 ROWS, COLS = 4, 8
 
 if __name__ == "__main__":
@@ -30,16 +40,16 @@ if __name__ == "__main__":
         exit(1)
 
     while True:
-        for i, host in enumerate(config.get("hosts")):
+        for h, host in enumerate(config.get("hosts")):
             conn = Connection(host.get("hostname"))  # use with statement
             if conn and conn.client:
-                for j, s in enumerate(host.get("sensors")):
+                for i, s in enumerate(host.get("sensors")):
                     sensor = Monitor.create_instance(s.get("sensor"), conn.client, s.get("cmd"), s.get("values"))
                     if sensor is not None:
                         color = sensor.probe()
-                        strip.setPixelColor((ROWS -j) * COLS -i, COLORS[color])
+                        strip.setPixelColor((ROWS - i) * COLS - h - 1, COLORS[color])
             else:
                 logger.warning(f"{host} seems to be offline. Skipping sensor probe(s) for this host.")
             conn.close()
         strip.show()
-        sleep(config.get("pause", 5*60))
+        sleep(config.get("pause", 5 * 60))

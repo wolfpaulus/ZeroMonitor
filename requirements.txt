@@ -2,5 +2,5 @@ pyyaml
 paramiko
 pillow
 numpy
-spydev
+spidev
 rpi_ws281x
