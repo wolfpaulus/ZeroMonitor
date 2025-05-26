@@ -127,7 +127,6 @@ class MemoryUsage(Monitor):
             return -1
         total, used = int(texts[1].split()[1]), int(texts[1].split()[2])
         usage = round(used * 100 / total + 0.5)  # Round to nearest integer
-        print(f"Memory usage: {usage} %")
         logger.debug(f"Memory usage: {usage} %")
         return Monitor.match(usage, self.values)
 
@@ -144,7 +143,6 @@ class DiskUsage(Monitor):
         if len(texts) < 2:
             logger.error("Disk usage information is not available.")
             return -1
-        print(f"Disk usage: {texts[1].split()} %")
         usage = int(texts[1].split()[-2][:-1])  # Get the second last value (Used)
         logger.debug(f"Disk usage: {usage} %")
         return Monitor.match(usage, self.values)
