@@ -2,7 +2,7 @@
 
 sensor_timeout: 0.5 # Pause after probing a sensor
 host_timeout: 0.5 # Timeout after completing one host
-brightness: 24 # Brightness of the strip (16-255)
+brightness: 63 # Brightness of the strip (24-255)
 
 sensors: # All sensors to monitor
   CpuUsage:
