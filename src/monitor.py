@@ -7,6 +7,7 @@ from abc import abstractmethod
 from paramiko import SSHClient, AutoAddPolicy, SSHConfig
 from log import logger
 
+
 class Connection:
     """ Base class for SSH connection """
 
