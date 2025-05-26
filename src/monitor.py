@@ -26,7 +26,7 @@ class Connection:
                 username=user_config["user"],
                 port=int(user_config["port"]),
                 key_filename=key_filename,
-                timeout=5
+                timeout=10
             )
         except OSError as err:
             logger.error(f"Error connecting to {hostname}: {err}")
