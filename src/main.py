@@ -43,9 +43,8 @@ if __name__ == "__main__":
 
     while True:
         for h, host in enumerate(config.get("hosts")): # iterate over hosts currently 7 configured
-            strip.setPixelColor(0,Color(2,8,2) if h%2 == 0 else Color(0, 0, 0))
+            strip.setPixelColor(0,Color(6,64,43) if h%2 == 0 else Color(0, 0, 0))
             conn = Connection(host.get("hostname"))  # use with statement
-            print(f"Probing host {host.get('hostname')}")
             if conn and conn.client:
                 for i, sensor in enumerate(config.get("sensors").values()): # iterate over sensors
                     sensor = sensor.copy()
@@ -56,7 +55,6 @@ if __name__ == "__main__":
                     if specific_sensor := host.get(sensor_name):
                         for k,v in specific_sensor.items():
                             sensor[k]= v
-                    print(sensor)
                     instance = Monitor.create_instance(sensor_name, conn.client, sensor.get("cmd"), sensor.get("values"))
                     if instance is not None:
                         color = instance.probe()
@@ -64,8 +62,8 @@ if __name__ == "__main__":
                     else:
                         logger.error(f"Sensor {sensor_name} not found. Skipping sensor probe for this host.")
                         strip.setPixelColor((ROWS - i) * COLS - h - 1, Color(0, 0, 0))
-                    strip.show()
                     sleep(config.get("sensor_timeout", 0.5))
+                    strip.show()
                 conn.close()
             else:
                 logger.warning(f"{host} seems to be offline. Skipping sensor probe(s) for this host.")
