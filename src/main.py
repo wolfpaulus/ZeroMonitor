@@ -17,10 +17,8 @@ COLORS = [
     Color(10, 0, 6),
     Color(0, 0, 0),
 ]
-# ROWS = 4 COLS = 8
-# Each host has one column
-# host = h : 0 .. 7
-# sensor = i : 0 .. 3
+# ROWS = 4 COLS = 8 Each host has one column
+# host = h : 0 .. 7 sensor = i : 0 .. 3
 #
 # 31 30 29 28 27 26 25 24   x = ROWS * COLS - 1 - h - (i * COLS)
 # 23 22 21 20 19 18 17 16   == (ROWS - i) * COLS - h - 1
@@ -28,7 +26,6 @@ COLORS = [
 # 07 06 05 04 03 02 01 00
 
 ROWS, COLS = 4, 8
-SLEEP = 1.1
 if __name__ == "__main__":
     try:
         with open("monitor.yaml") as file:
@@ -38,7 +35,7 @@ if __name__ == "__main__":
         logger.error(f"Error loading configuration file. {err}")
         exit(1)
     try:
-        strip = PixelStrip(num=32, pin=18, freq_hz=800_000, dma=10, invert=False, brightness=64, channel=0)
+        strip = PixelStrip(num=32, pin=18, freq_hz=800_000, dma=10, invert=False, brightness=config.get("brightness",16), channel=0)
         strip.begin()
     except Exception as err:
         logger.error(f"Error connecting to neopixels: {err}")
@@ -46,26 +43,34 @@ if __name__ == "__main__":
 
     while True:
         for h, host in enumerate(config.get("hosts")): # iterate over hosts currently 7 configured
-            color = Color(2,8,2) if h%2 == 0 else Color(0, 0, 0)
-            strip.setPixelColor(0,color)
+            strip.setPixelColor(0,Color(2,8,2) if h%2 == 0 else Color(0, 0, 0))
             conn = Connection(host.get("hostname"))  # use with statement
+            print(f"Probing host {host.get('hostname')}")
             if conn and conn.client:
-                for i, s in enumerate(host.get("sensors")):
+                for i, sensor in enumerate(config.get("sensors").values()): # iterate over sensors
+                    sensor = sensor.copy()
                     strip.setPixelColor((ROWS - i) * COLS - h - 1, Color(0, 0, 0))
-                    sensor = Monitor.create_instance(s.get("sensor"), conn.client, s.get("cmd"), s.get("values"))
-                    if sensor is not None:
-                        color = sensor.probe()
+                    strip.show()  # activity indicator
+                    # update the sensor with host overrides
+                    sensor_name = sensor.get("name")
+                    if specific_sensor := host.get(sensor_name):
+                        for k,v in specific_sensor.items():
+                            sensor[k]= v
+                    print(sensor)
+                    instance = Monitor.create_instance(sensor_name, conn.client, sensor.get("cmd"), sensor.get("values"))
+                    if instance is not None:
+                        color = instance.probe()
                         strip.setPixelColor((ROWS - i) * COLS - h - 1, COLORS[color])
                     else:
-                        logger.error(f"Sensor {s.get('sensor')} not found. Skipping sensor probe for this host.")
+                        logger.error(f"Sensor {sensor_name} not found. Skipping sensor probe for this host.")
                         strip.setPixelColor((ROWS - i) * COLS - h - 1, Color(0, 0, 0))
                     strip.show()
-                    sleep(SLEEP)
+                    sleep(config.get("sensor_timeout", 0.5))
                 conn.close()
             else:
                 logger.warning(f"{host} seems to be offline. Skipping sensor probe(s) for this host.")
-                for i, s in enumerate(host.get("sensors")):
+                for i in range(ROWS):
                     strip.setPixelColor((ROWS - i) * COLS - h - 1, Color(0, 0, 0))
                 strip.show()
-                sleep(SLEEP)
-        sleep(SLEEP)
+            sleep(config.get("host_timeout", 0.5))
+
