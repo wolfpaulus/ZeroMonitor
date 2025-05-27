@@ -48,11 +48,11 @@ if __name__ == "__main__":
         now = datetime.now().time()
         on = datetime.strptime(config.get("neopixel").get("on_"), "%H:%M").time()
         off = datetime.strptime(config.get("neopixel").get("off_"), "%H:%M").time()
-        print(now, on, off)
-        if not (on <= now < off):
-            strip.setBrightness(0)
+        if on <= now < off:
+            strip.setBrightness(config.get("neopixel").get("brightness", 63))
         else:
-            strip.setBrightness(config.get("brightness", 16))
+            strip.setBrightness(0)
+
         for h, host in enumerate(config.get("hosts")):  # iterate over hosts currently 7 configured
             strip.setPixelColor(0, COLORS[0] if h % 2 == 0 else COLORS[-1])
             conn = Connection(host.get("hostname"))  # use with statement
