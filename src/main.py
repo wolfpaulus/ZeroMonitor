@@ -1,7 +1,7 @@
 """
 Zero-Monitor Main Module
 """
-
+from datetime import datetime, time
 from time import sleep
 from collections import ChainMap
 from yaml import safe_load
@@ -44,6 +44,13 @@ if __name__ == "__main__":
         exit(1)
 
     while True:
+        now = datetime.now().time()
+        on = datetime.strptime(config.get("neopixel").get("on_"), "%H:%M").time()
+        off = datetime.strptime(config.get("neopixel").get("off_"), "%H:%M").time()
+        if on > off:
+            strip.setBrightness(0)
+        else:
+            strip.setBrightness(config.get("brightness", 16))
         for h, host in enumerate(config.get("hosts")):  # iterate over hosts currently 7 configured
             strip.setPixelColor(0, COLORS[0] if h % 2 == 0 else COLORS[-1])
             conn = Connection(host.get("hostname"))  # use with statement
