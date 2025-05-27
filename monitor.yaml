@@ -4,7 +4,7 @@ sensor_timeout: 0.5 # Pause after probing a sensor
 host_timeout: 0.5 # Timeout after completing one host
 neopixel:
   brightness: 63 # Brightness of the strip (24-255)
-  off_: "20:00"
+  off_: "20:25"
   on_: "6:30" # Turn on at 6:30, off at 8:00
 
 sensors: # All sensors to monitor

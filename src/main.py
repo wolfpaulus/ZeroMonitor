@@ -1,7 +1,8 @@
 """
 Zero-Monitor Main Module
+Author: Wolf Paulus
 """
-from datetime import datetime, time
+from datetime import datetime
 from time import sleep
 from collections import ChainMap
 from yaml import safe_load
