@@ -47,7 +47,8 @@ if __name__ == "__main__":
         now = datetime.now().time()
         on = datetime.strptime(config.get("neopixel").get("on_"), "%H:%M").time()
         off = datetime.strptime(config.get("neopixel").get("off_"), "%H:%M").time()
-        if on > off:
+        print(now, on, off)
+        if not (on <= now < off):
             strip.setBrightness(0)
         else:
             strip.setBrightness(config.get("brightness", 16))
