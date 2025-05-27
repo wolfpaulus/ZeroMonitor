@@ -25,6 +25,7 @@ ensure_venv() {
     fi
     PYTHON="$REPO_DIR/venv/bin/python"
 }
+
 is_app_running() {
     pgrep -f "$APP_PATH" >/dev/null
 }

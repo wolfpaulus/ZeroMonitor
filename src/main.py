@@ -64,6 +64,7 @@ if __name__ == "__main__":
                     pix = (ROWS - i) * COLS - h - 1
                     strip.setPixelColor(pix, COLORS[-1])
                     strip.show()  # activity indicator
+                    sleep(0.1)
                     if instance is not None:
                         strip.setPixelColor(pix, COLORS[instance.probe()])
                         strip.show()
