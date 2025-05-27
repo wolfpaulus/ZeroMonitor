@@ -1,6 +1,6 @@
 """
 Zero-Monitor Main Module
-Author: Wolf Paulus
+Author: Wolf Paulus wolf@paulus.com
 """
 from datetime import datetime
 from time import sleep

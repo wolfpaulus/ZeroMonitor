@@ -3,7 +3,7 @@
 
 set -euo pipefail
 
-REPO_URL="https://github.com/wolfpaulus/ZeroMonitor.git"
+REPO_URL="git@github.com:wolfpaulus/ZeroMonitor.git"
 REPO_DIR="/opt/ZeroMonitor"
 BRANCH="main"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
