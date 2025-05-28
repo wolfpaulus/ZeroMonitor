@@ -33,13 +33,13 @@ if __name__ == "__main__":
                     instance = Monitor.create_instance(name, conn.client, sensor.get("cmd"), sensor.get("values"))
                     if instance is not None:
                         col, val = instance.probe()
-                        display.update(h, i, col, 0.5)
+                        display.update(i, h, col, 0.5)
                     else:
                         logger.error(f"Sensor {name} not found. Skipping sensor probe for this host.")
-                        display.update(h, i, -1)
+                        display.update(i, h, -1)
                 conn.close()
             else:
                 logger.warning(f"{host} seems to be offline. Skipping sensor probe(s) for this host.")
                 for i, sensor in enumerate(config.get("sensors").values()):
-                    display.update(h, i, -1)
+                    display.update(i, h, -1)
             sleep(config.get("host_timeout", 0.5))

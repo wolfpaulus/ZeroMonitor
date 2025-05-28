@@ -59,22 +59,25 @@ class NeoDisplay(Display):
 
     def activity(self):
         """ Indicate activity by setting all pixels to a specific color."""
-        self.update(0, 0, 0)
-        sleep(0.5)
-        self.update(0, 0, -1)
+        self.update(15, 3, -1, 0.5)
 
-    def update(self, row: int, col: int, color: int, delay: float = 0.1):
+
+    def update(self, x: int, y: int, color: int, delay: float = 0.1):
         """Update the pixel at the specified row and column with the given color."""
         if self.on <= datetime.now().time() < self.off:
             self.strip.setBrightness(self.brightness)
         else:
             self.strip.setBrightness(0)
 
-        index = (NeoDisplay.ROWS - row) * NeoDisplay.COLS - col - 1
+        index = (NeoDisplay.ROWS - y) * NeoDisplay.COLS - x - 1
+        if delay > 0.1:
+            col = -1 if color != -1 else 0
+            self.strip.setPixelColor(index, NeoDisplay.COLORS[col])
+            self.strip.show()
+            sleep(delay)
         self.strip.setPixelColor(index, NeoDisplay.COLORS[color])
         self.strip.show()
-        if delay > 0:
-            sleep(delay)
+
 
 
 class InkDisplay(Display):
