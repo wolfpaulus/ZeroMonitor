@@ -69,6 +69,7 @@ log "Updates detected. Applying update..."
 log "== Stopping running app (if any) =="
 pkill -f "$APP_PATH" || true
 
+
 log "== Backing up current version =="
 cd /opt
 mv "$REPO_DIR" "$BACKUP_DIR"
@@ -84,6 +85,10 @@ if [ "$NUM_BACKUPS" -gt 3 ]; then
         rm -rf "$old"
     done
 fi
+
+# Remove log files
+rm /var/log/zero_monitor*.log
+
 
 log "== Cloning latest repo =="
 git clone --depth 1 --branch "$BRANCH" "$REPO_URL" "$REPO_DIR"
