@@ -1,7 +1,7 @@
 import logging
 import time
 from PIL import Image, ImageDraw, ImageFont
-from waveshare_epd import epd2in13_V4
+from waveshare import epd2in13_V4
 from random import randint
 
 

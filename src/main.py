@@ -11,13 +11,25 @@ from display import NeoDisplay, InkDisplay, NeoDisplayMac
 from log import logger
 
 if __name__ == "__main__":
-
-    print(socket.gethostname())
+    try:
+        from waveshare import DS3231
+        RTC = DS3231.DS3231(add=0x68)
+        logger.info(f"Temperature {RTC.Read_Temperature():.2f} Celsius")
+    except Exception as e:
+        logger.error(f"Error initializing DS3231: {e}")
+        RTC = None
     try:
         with open("monitor.yaml") as file:
             config = safe_load(file)
             logger.info("Configuration loaded successfully.")
-        display = NeoDisplay(config) if socket.gethostname() == "epsilon" else NeoDisplayMac(config)
+        if  socket.gethostname() == "epsilon":
+            logger.info("Using NeoDisplay for LED strip.")
+            display = NeoDisplay(config)
+        elif socket.gethostname()  == "delta":
+            logger.info("Using InkDisplay for e-ink display.")
+            display = InkDisplay(config)
+        else:
+            display = NeoDisplayMac(config)
     except OSError as err:
         logger.error(f"Error loading configuration file. {err}")
         exit(1)
@@ -41,5 +53,4 @@ if __name__ == "__main__":
                 logger.warning(f"{host} seems to be offline. Skipping sensor probe(s) for this host.")
                 for s, sensor in enumerate(config.get("sensors").values()):
                     display.update(h, s, -1)
-            display.activity()
             sleep(config.get("host_timeout", 0.5))

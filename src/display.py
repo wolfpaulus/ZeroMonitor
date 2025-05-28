@@ -57,11 +57,11 @@ class NeoDisplay(Display):
             logger.error(f"Error connecting to neopixels: {err}")
             exit(1)
 
-    def activity(self)->None:
+    def activity(self) -> None:
         """ Indicate activity by setting all pixels to a specific color."""
         self.update(15, 3, -1, 0.5)
 
-    def update(self, x: int, y: int, color: int, delay: float = 0.1)->None:
+    def update(self, x: int, y: int, color: int, delay: float = 0.1) -> None:
         """Update the pixel at the specified row and column with the given color."""
         if self.on <= datetime.now().time() < self.off:
             self.strip.setBrightness(self.brightness)
@@ -100,8 +100,8 @@ class NeoDisplayMac(Display):
     ROWS, COLS = 4, 8
     COLORS = "🔵🔵🟢🟧🔴🟪⚪⚫"
 
-    def __init__(self, config: dict):
-        self.buffer = ["⚫"]* 32
+    def __init__(self, _: dict):
+        self.buffer = ["⚫"] * 32
 
     def update(self, x: int, y: int, color: int, delay: float = 0.1):
         """Update the pixel at the specified row and column with the given color."""
