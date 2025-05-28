@@ -57,19 +57,18 @@ class NeoDisplay(Display):
             logger.error(f"Error connecting to neopixels: {err}")
             exit(1)
 
-    def activity(self):
+    def activity(self)->None:
         """ Indicate activity by setting all pixels to a specific color."""
         self.update(15, 3, -1, 0.5)
 
-
-    def update(self, x: int, y: int, color: int, delay: float = 0.1):
+    def update(self, x: int, y: int, color: int, delay: float = 0.1)->None:
         """Update the pixel at the specified row and column with the given color."""
         if self.on <= datetime.now().time() < self.off:
             self.strip.setBrightness(self.brightness)
         else:
             self.strip.setBrightness(0)
 
-        index = (NeoDisplay.ROWS - y) * NeoDisplay.COLS - x - 1
+        index = NeoDisplay.COLS * NeoDisplay.ROWS - x - (y * NeoDisplay.COLS)
         if delay > 0.1:
             col = -1 if color != -1 else 0
             self.strip.setPixelColor(index, NeoDisplay.COLORS[col])
@@ -77,7 +76,6 @@ class NeoDisplay(Display):
             sleep(delay)
         self.strip.setPixelColor(index, NeoDisplay.COLORS[color])
         self.strip.show()
-
 
 
 class InkDisplay(Display):
@@ -92,6 +90,28 @@ class InkDisplay(Display):
         """ Indicate activity for e-ink display."""
         logger.warning("Activity indication not implemented for InkDisplay.")
 
-    def update(self, row: int, col: int, color: int, delay: float = 0.1):
+    def update(self, col: int, row: int, color: int, delay: float = 0.1):
         """Update the pixel at the specified row and column with the given color."""
         logger.warning("Update method not implemented for InkDisplay.")
+
+
+class NeoDisplayMac(Display):
+    """Display class to manage the LED strip and its configuration for Mac."""
+    ROWS, COLS = 4, 8
+    COLORS = "🔵🔵🟢🟧🔴🟪⚪⚫"
+
+    def __init__(self, config: dict):
+        self.buffer = ["⚫"]* 32
+
+    def update(self, x: int, y: int, color: int, delay: float = 0.1):
+        """Update the pixel at the specified row and column with the given color."""
+        self.buffer[x + NeoDisplayMac.COLS * y] = NeoDisplayMac.COLORS[color]
+
+    def activity(self):
+        """ Indicate activity by printing the current buffer."""
+        self.buffer[-1] = "⚫" if self.buffer[-1] != "⚫" else "🔵"
+        screen = []
+        for r in range(NeoDisplayMac.ROWS):
+            screen += self.buffer[r * NeoDisplayMac.COLS:(r + 1) * NeoDisplayMac.COLS]
+            screen += "\n"
+        print("".join(screen))

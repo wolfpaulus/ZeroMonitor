@@ -7,7 +7,7 @@ from time import sleep
 from collections import ChainMap
 from yaml import safe_load
 from monitor import Connection, Monitor
-from display import NeoDisplay, InkDisplay
+from display import NeoDisplay, InkDisplay, NeoDisplayMac
 from log import logger
 
 if __name__ == "__main__":
@@ -17,29 +17,29 @@ if __name__ == "__main__":
         with open("monitor.yaml") as file:
             config = safe_load(file)
             logger.info("Configuration loaded successfully.")
-        display = NeoDisplay(config) if socket.gethostname() == "epsilon" else InkDisplay(config)
+        display = NeoDisplay(config) if socket.gethostname() == "epsilon" else NeoDisplayMac(config)
     except OSError as err:
         logger.error(f"Error loading configuration file. {err}")
         exit(1)
 
     while True:
         for h, host in enumerate(config.get("hosts")):  # iterate over hosts currently 7 configured
-            display.activity()
             conn = Connection(host.get("hostname"))  # use with statement
             if conn and conn.client:
-                for i, sensor in enumerate(config.get("sensors").values()):  # iterate over sensors
+                for s, sensor in enumerate(config.get("sensors").values()):  # iterate over sensors
                     name = sensor.get("name")
                     sensor = ChainMap(host.get(name, {}), sensor)
                     instance = Monitor.create_instance(name, conn.client, sensor.get("cmd"), sensor.get("values"))
                     if instance is not None:
                         col, val = instance.probe()
-                        display.update(i, h, col, 0.5)
+                        display.update(h, s, col, 0.5)
                     else:
                         logger.error(f"Sensor {name} not found. Skipping sensor probe for this host.")
-                        display.update(i, h, -1)
+                        display.update(h, s, -1)
                 conn.close()
             else:
                 logger.warning(f"{host} seems to be offline. Skipping sensor probe(s) for this host.")
-                for i, sensor in enumerate(config.get("sensors").values()):
-                    display.update(i, h, -1)
+                for s, sensor in enumerate(config.get("sensors").values()):
+                    display.update(h, s, -1)
+            display.activity()
             sleep(config.get("host_timeout", 0.5))
