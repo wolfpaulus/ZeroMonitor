@@ -68,7 +68,7 @@ class Monitor:
         self.values = values
 
     @abstractmethod
-    def probe(self) -> int:
+    def probe(self) -> (int, int):
         """ Probe the system for information """
         ...
 
@@ -94,21 +94,22 @@ class Monitor:
 class CpuTemperature(Monitor):
     """ Monitor class for CPU temperature """
 
-    def probe(self) -> int:
+    def probe(self) -> (int, int):
         """ Probe the CPU temperature in Celsius """
         stdin, stdout, stderr = self.client.exec_command(self.cmd)
         temp = int(stdout.read().decode()) / 1000
         logger.debug(f"CPU temperature: {temp}°C")
-        return Monitor.match(temp, self.values)
+        return Monitor.match(temp, self.values), int(temp)
 
 
 class CpuUsage(Monitor):
-    def probe(self) -> int:
+    def probe(self) -> (int, int):
         """ Probe the CPU Usage in percent """
         stdin, stdout, stderr = self.client.exec_command(self.cmd)
         usage = round(float(stdout.read().decode()) + 0.5)  # Round to nearest integer
         logger.debug(f"CPU usage: {usage} %")
-        return Monitor.match(usage, self.values)
+        return Monitor.match(usage, self.values), usage
+
 
 class MemoryUsage(Monitor):
     """ Monitor class for Memory usage
@@ -119,7 +120,8 @@ class MemoryUsage(Monitor):
         u     = x
         total = 100
     """
-    def probe(self) -> int:
+
+    def probe(self) -> (int, int):
         """ Probe the Memory """
         stdin, stdout, stderr = self.client.exec_command(self.cmd)
         texts = stdout.read().decode().split("\n")
@@ -129,7 +131,8 @@ class MemoryUsage(Monitor):
         total, used = int(texts[1].split()[1]), int(texts[1].split()[2])
         usage = round(used * 100 / total + 0.5)  # Round to nearest integer
         logger.debug(f"Memory usage: {usage} %")
-        return Monitor.match(usage, self.values)
+        return Monitor.match(usage, self.values), usage
+
 
 class DiskUsage(Monitor):
     """ Monitor class for Disk usage
@@ -137,7 +140,8 @@ class DiskUsage(Monitor):
         Filesystem     1K-blocks    Used Available Use% Mounted on
         /dev/mmcblk0p2  14719576 3318572  10753180  24% /
     """
-    def probe(self) -> int:
+
+    def probe(self) -> (int, int):
         """ Probe the Disk usage """
         stdin, stdout, stderr = self.client.exec_command(self.cmd)
         texts = stdout.read().decode().split("\n")
@@ -146,7 +150,8 @@ class DiskUsage(Monitor):
             return -1
         usage = int(texts[1].split()[-2][:-1])  # Get the second last value (Used)
         logger.debug(f"Disk usage: {usage} %")
-        return Monitor.match(usage, self.values)
+        return Monitor.match(usage, self.values), usage
+
 
 if __name__ == "__main__":
     v1 = [50, 65, 80]
