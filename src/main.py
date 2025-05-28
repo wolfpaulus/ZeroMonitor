@@ -22,7 +22,7 @@ if __name__ == "__main__":
         with open("monitor.yaml") as file:
             config = safe_load(file)
             logger.info("Configuration loaded successfully.")
-        if  socket.gethostname() == "epsilon":
+        if  RTC is None: # The device is not equipped with the e-Paper display
             logger.info("Using NeoDisplay for LED strip.")
             display = NeoDisplay(config)
         elif socket.gethostname()  == "delta":
