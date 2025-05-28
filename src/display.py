@@ -68,7 +68,7 @@ class NeoDisplay(Display):
         else:
             self.strip.setBrightness(0)
 
-        index = NeoDisplay.COLS * NeoDisplay.ROWS - x - (y * NeoDisplay.COLS)
+        index = NeoDisplay.COLS * NeoDisplay.ROWS - x - 1 - (y * NeoDisplay.COLS)
         if delay > 0.1:
             col = -1 if color != -1 else 0
             self.strip.setPixelColor(index, NeoDisplay.COLORS[col])
