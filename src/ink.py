@@ -22,6 +22,7 @@ class InkDisplay(Display):
         self.values = [0] * 16
         self.epd.init()
         self.epd.Clear()
+        self._redraw()
         time.sleep(1)
 
 
