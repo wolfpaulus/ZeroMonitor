@@ -61,7 +61,7 @@ try:
     epd.Clear()
     time.sleep(1)
 
-    logging.info("Creating a white image, maching the display size...")
+    logging.info("Creating a white image, matching the display size...")
     image = Image.new('1', (epd.height, epd.width), 1)  # 255: clear the frame
     draw = ImageDraw.Draw(image)
 
