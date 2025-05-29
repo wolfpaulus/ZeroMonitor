@@ -45,11 +45,11 @@ class NeoDisplay(Display):
                                     freq_hz=800_000,
                                     dma=10,
                                     invert=False,
-                                    brightness=config.get("neopixel").get("brightness", 63),
+                                    brightness=self.brightness,
                                     channel=0)
             self.strip.begin()
         except Exception as err:
-            logger.error(f"Error connecting to neopixels: {err}")
+            logger.error(f"Error connecting to neo-pixels: {err}")
             exit(1)
 
 
@@ -57,16 +57,15 @@ class NeoDisplay(Display):
         """Update the pixel at the specified row and column with the given color."""
         if self.on <= datetime.now().time() < self.off:
             self.strip.setBrightness(self.brightness)
+            index = NeoDisplay.COLS * NeoDisplay.ROWS - x - 1 - (y * NeoDisplay.COLS)
+            if delay > 0.1:
+                color = -1 if values[0] != -1 else 0
+                self.strip.setPixelColor(index, NeoDisplay.COLORS[color])
+                self.strip.show()
+                sleep(delay)
+            self.strip.setPixelColor(index, NeoDisplay.COLORS[values[0]])
         else:
             self.strip.setBrightness(0)
-
-        index = NeoDisplay.COLS * NeoDisplay.ROWS - x - 1 - (y * NeoDisplay.COLS)
-        if delay > 0.1:
-            col = -1 if values[0] != -1 else 0
-            self.strip.setPixelColor(index, NeoDisplay.COLORS[col])
-            self.strip.show()
-            sleep(delay)
-        self.strip.setPixelColor(index, NeoDisplay.COLORS[values[0]])
         self.strip.show()
 
 
