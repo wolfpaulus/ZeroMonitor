@@ -37,7 +37,7 @@ class InkDisplay(Display):
                 y = 22 + 20 * row
                 for col in range(4):
                     x = 65 + 45 * col
-                    self.draw.text((x, y), f"{self.values[col + row*4]:4}", font=small, fill=0)
+                    self.draw.text((x, y), f"{self.values[row + col*4]:4}", font=small, fill=0)
 
             self.draw.line([(65, 103), (254, 103)], fill=0, width=1)
             self.draw_mixed_font_text((65, 105), self.get_footer())
