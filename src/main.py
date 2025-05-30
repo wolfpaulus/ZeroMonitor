@@ -47,7 +47,7 @@ if __name__ == "__main__":
                     instance = Monitor.create_instance(name, conn.client, sensor.get("cmd"), sensor.get("values"))
                     if instance is not None:
                         col, val = instance.probe()
-                        display.update(h, s, (col,val), 0.5)
+                        display.update(h, s, (col,val), 0.5, hostname=host.get("hostname"))
                     else:
                         logger.error(f"Sensor {name} not found. Skipping sensor probe for this host.")
                         display.update(h, s, (-1,-1))
