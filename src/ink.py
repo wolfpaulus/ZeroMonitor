@@ -1,5 +1,6 @@
 """ InkDisplay class for e-ink displays."""
 import time
+import subprocess
 from display import Display
 from log import logger
 from PIL import Image, ImageDraw, ImageFont
@@ -16,7 +17,7 @@ class InkDisplay(Display):
     def __init__(self, config: dict):
         """Initialize the e-ink display."""
         logger.info("init and clear the e-ink display")
-        self.hosts = config.get("hosts", hosts)
+        self.hosts = config.get("hosts", [])
         self.epd = epd2in13_V4.EPD()
         self.counter = 0
         self.values = [0] * 16
@@ -99,5 +100,27 @@ class InkDisplay(Display):
             ("󰅐", icons),
             (f" {time.strftime('%H:%M:%S')}   ", tiny),
             ("󰖩", icons),
-            (" 70/70  ", tiny)  # iwconfig wlan0 | grep Quality
+            (f" {InkDisplay.get_wifi_quality()}/70  ", tiny)  # iwconfig wlan0 | grep Quality
         ]
+
+    @staticmethod
+    def get_wifi_quality()->int:
+        command = "iwconfig"
+        process = subprocess.Popen(command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output, error = process.communicate()
+
+        if error:
+            logger.error(f"Error: {error.decode('utf-8')}")
+            return 0
+
+        output_str = output.decode("utf-8")
+        lines = output_str.splitlines()
+
+        wifi_data = {}
+        for line in lines:
+            if "Signal level" in line:
+                wifi_data["signal_level"] = line.split("Signal level=")[1].split(" ")[0]
+            if "Link Quality" in line:
+                wifi_data["link_quality"] = line.split("Link Quality=")[1].split(" ")[0]
+
+        return int(wifi_data.get("link_quality", 0))
