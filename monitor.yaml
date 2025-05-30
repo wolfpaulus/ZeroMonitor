@@ -6,6 +6,12 @@ neopixel:
   brightness: 127 # Brightness of the strip (24-255)
   off_: "20:00" # Turn off at 20:00, on at 6:30
   on_: "6:30" # Turn on at 6:30, off at 8:00
+epaper: # https://www.waveshare.com/wiki/2.13inch_e-Paper_HAT+
+  hosts:
+    - alpha
+    - beta
+    - apollo
+    - artemis
 
 sensors: # All sensors to monitor
   CpuUsage:

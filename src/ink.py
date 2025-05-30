@@ -9,7 +9,6 @@ bold = ImageFont.truetype('DejaVuSans-Bold.ttf', 15)
 small = ImageFont.truetype('DejaVuSans.ttf', 15)
 tiny = ImageFont.truetype('DejaVuSans.ttf', 12)
 icons = ImageFont.truetype('fonts/materialdesignicons-webfont.ttf', 18)
-hosts = ["alpha", "beta", "apollo", "artemis"]
 
 class InkDisplay(Display):
     """Display class for e-ink displays."""
@@ -17,6 +16,7 @@ class InkDisplay(Display):
     def __init__(self, config: dict):
         """Initialize the e-ink display."""
         logger.info("init and clear the e-ink display")
+        self.hosts = config.get("hosts", hosts)
         self.epd = epd2in13_V4.EPD()
         self.counter = 0
         self.values = [0] * 16
@@ -26,8 +26,11 @@ class InkDisplay(Display):
         time.sleep(1)
 
 
-    def update(self, x: int, y: int, values: tuple[int,int], delay: float = 0.1):
+    def update(self, x: int, _: int, values: tuple[int,int], delay: float = 0.1, hostname:str = None):
         """Update the pixel at the specified row and column with the given color."""
+        if hostname not in self.hosts:
+            return # irrelevant host
+        y = self.hosts.index(hostname) # get the row index provided y is irrelevant
         self.counter += 1
         self.values[x + y * 4] = values[1]
         if self.counter == 16:
@@ -53,8 +56,8 @@ class InkDisplay(Display):
         self.draw.line([(0, 20), (249, 20)], fill=0, width=1)
         self.draw.line([(0, 103), (249, 103)], fill=0, width=1)
         self.epd.displayPartBaseImage(self.epd.getbuffer(self.image.rotate(180)))
-        for i in range(len(hosts)):
-            host = f"{(hosts[i])[:10]}"
+        for i in range(len(self.hosts)):
+            host = f"{(self.hosts[i])[:10]}"
             y = 22 + 20 * i
             self.draw.text((0, y), host, font=bold, fill=0)
         self.epd.displayPartial(self.epd.getbuffer(self.image.rotate(180)))

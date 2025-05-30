@@ -10,7 +10,7 @@ class Display(ABC):
     """ Abstract base class for display management."""
 
     @abstractmethod
-    def update(self, x:int, y:int, values: tuple[int], delay:float)->None:
+    def update(self, x:int, y:int, values: tuple[int], delay:float, hostname:str = None)->None:
         """Update the pixel at the specified row and column with the given color."""
         pass
 
@@ -53,7 +53,7 @@ class NeoDisplay(Display):
             exit(1)
 
 
-    def update(self, x: int, y: int, values:tuple[int,int], delay: float = 0.1) -> None:
+    def update(self, x: int, y: int, values:tuple[int,int], delay: float = 0.1, hostname:str = None) -> None:
         """Update the pixel at the specified row and column with the given color."""
         if self.on <= datetime.now().time() < self.off:
             self.strip.setBrightness(self.brightness)
@@ -77,7 +77,7 @@ class NeoDisplayMac(Display):
     def __init__(self, _: dict):
         self.buffer = ["⚫"] * 32
 
-    def update(self, x: int, y: int, values:tuple[int,int], delay: float = 0.1):
+    def update(self, x: int, y: int, values:tuple[int,int], delay: float = 0.1, hostname:str = None):
         """Update the pixel at the specified row and column with the given color."""
         self.buffer[x + NeoDisplayMac.COLS * y] = NeoDisplayMac.COLORS[values[0]]
         screen = []
