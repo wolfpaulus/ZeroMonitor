@@ -105,7 +105,7 @@ class InkDisplay(Display):
 
     @staticmethod
     def get_wifi_quality()->int:
-        command = "iwconfig"
+        command = "/usr/sbin/iwconfig"
         process = subprocess.Popen(command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output, error = process.communicate()
 
