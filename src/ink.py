@@ -104,23 +104,20 @@ class InkDisplay(Display):
         ]
 
     @staticmethod
-    def get_wifi_quality()->int:
+    def get_wifi_quality()->str:
         command = "/usr/sbin/iwconfig"
         process = subprocess.Popen(command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output, error = process.communicate()
 
         if error:
             logger.error(f"Error: {error.decode('utf-8')}")
-            return 0
+            return "-/-"
 
         output_str = output.decode("utf-8")
         lines = output_str.splitlines()
 
-        wifi_data = {}
+        wifi_data = ""
         for line in lines:
-            if "Signal level" in line:
-                wifi_data["signal_level"] = line.split("Signal level=")[1].split(" ")[0]
             if "Link Quality" in line:
-                wifi_data["link_quality"] = line.split("Link Quality=")[1].split(" ")[0]
-
-        return int(wifi_data.get("link_quality", 0))
+                wifi_data = line.split("Link Quality=")[1].split(" ")[0]
+        return wifi_data
