@@ -27,7 +27,7 @@ class InkDisplay(Display):
         time.sleep(1)
 
 
-    def update(self, x: int, _: int, values: tuple[int,int], delay: float = 0.1, hostname:str = None):
+    def update(self, _: int, x: int, values: tuple[int,int], delay: float = 0.1, hostname:str = None):
         """Update the pixel at the specified row and column with the given color."""
         if hostname not in self.hosts:
             return # irrelevant host
