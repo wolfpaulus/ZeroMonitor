@@ -100,12 +100,12 @@ class InkDisplay(Display):
             ("󰅐", icons),
             (f" {time.strftime('%H:%M:%S')}   ", tiny),
             ("󰖩", icons),
-            (f" {InkDisplay.get_wifi_quality()}/70  ", tiny)  # iwconfig wlan0 | grep Quality
+            (f" {InkDisplay.get_wifi_quality()}", tiny)  # iwconfig wlan0 | grep Quality
         ]
 
     @staticmethod
     def get_wifi_quality()->str:
-        command = "/usr/sbin/iwconfig"
+        command = "/usr/sbin/iwconfig wlan0"
         process = subprocess.Popen(command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output, error = process.communicate()
 
