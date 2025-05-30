@@ -39,7 +39,8 @@ if __name__ == "__main__":
 
     while True:
         for h, host in enumerate(config.get("hosts")):  # iterate over hosts currently 7 configured
-            conn = Connection(host.get("hostname"))  # use with statement
+            hostname = host.get("hostname")
+            conn = Connection(hostname)  # use with statement
             if conn and conn.client:
                 for s, sensor in enumerate(config.get("sensors").values()):  # iterate over sensors
                     name = sensor.get("name")
@@ -47,7 +48,7 @@ if __name__ == "__main__":
                     instance = Monitor.create_instance(name, conn.client, sensor.get("cmd"), sensor.get("values"))
                     if instance is not None:
                         col, val = instance.probe()
-                        display.update(h, s, (col,val), 0.5, hostname=host.get("hostname"))
+                        display.update(h, s, (col,val), 0.5, hostname)
                     else:
                         logger.error(f"Sensor {name} not found. Skipping sensor probe for this host.")
                         display.update(h, s, (-1,-1))
