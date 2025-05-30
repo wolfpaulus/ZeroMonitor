@@ -17,7 +17,7 @@ class InkDisplay(Display):
     def __init__(self, config: dict):
         """Initialize the e-ink display."""
         logger.info("init and clear the e-ink display")
-        self.hosts = config.get("hosts", [])
+        self.hosts = config.get("epaper", {}).get("hosts", [])
         self.epd = epd2in13_V4.EPD()
         self.counter = 0
         self.values = [0] * 16
