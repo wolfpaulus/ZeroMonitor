@@ -45,7 +45,12 @@ class InkDisplay(Display):
         sleep(1)
 
     def update(self, hi: int, si: int, values: tuple[int, int]):
-        """Update the pixel at the specified row and column with the given color."""
+        """Update the pixel at the specified row and column with the given color.
+        Args:
+            hi (int): Host index. 0 .. 7
+            si (int): Sensor index. 0 .. 3
+            values (tuple[int, int]): Values to display, e.g., (value, color_code).
+        """
         sleep(self.timeout)
         if self.on <= datetime.now().time() < self.off:
             if not self.active: # if the display is not active, redraw it
