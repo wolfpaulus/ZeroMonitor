@@ -59,7 +59,7 @@ class InkDisplay(Display):
             if self.all_hosts[hi].get("hostname") in self.hosts:
                 hi = self.hosts.index(hostname)
                 self.counter += 1
-                self.values[si + hi * 4] = values[0]
+                self.values[si + hi * 4] = values[0] if values[0] >= 0 else ""
                 if self.counter == len(self.values):
                     self.counter = 0
                     self.draw.rectangle((65, 22, 249, 121), fill=1)  # clear partial image
