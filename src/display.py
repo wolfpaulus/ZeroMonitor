@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from time import sleep
 from datetime import datetime
 from rpi_ws281x import PixelStrip, Color
+from waveshare import DS3231
 from log import logger
 
 
@@ -10,9 +11,25 @@ class Display(ABC):
     """ Abstract base class for display management."""
 
     @abstractmethod
-    def update(self, x:int, y:int, values: tuple[int], delay:float, hostname:str = None)->None:
-        """Update the pixel at the specified row and column with the given color."""
+    def update(self, hi: int, si: int, values: tuple[int, int]) -> None:
+        """Update the display for a given host and sensor.
+        Args:
+            hi (int): Host index.
+            si (int): Sensor index.
+            values (tuple[int,int]): Values to display, e.g., (value, color_code).
+        """
         pass
+
+    @staticmethod
+    def has_epaper() -> bool:
+        """Check if the display has an e-Paper display."""
+        try:
+            rtc = DS3231.DS3231(add=0x68)
+            logger.info(f"E-Paper Display Temperature {rtc.Read_Temperature():.2f} Celsius")
+            return True
+        except Exception as e:
+            logger.error(f"Error initializing DS3231: {e}")
+            return False
 
 
 class NeoDisplay(Display):
@@ -35,11 +52,12 @@ class NeoDisplay(Display):
         Color(0, 0, 0),
     ]
 
-    def __init__(self, config: dict):
+    def __init__(self, cfg: dict):
         try:
-            self.on = datetime.strptime(config.get("neopixel").get("on_"), "%H:%M").time()
-            self.off = datetime.strptime(config.get("neopixel").get("off_"), "%H:%M").time()
-            self.brightness = config.get("neopixel").get("brightness", 63)
+            self.on = datetime.strptime(cfg.get("displays").get("neopixel").get("on_"), "%H:%M").time()
+            self.off = datetime.strptime(cfg.get("displays").get("neopixel").get("off_"), "%H:%M").time()
+            self.timeout = cfg.get("displays").get("neopixel").get("sensor_timeout", 0.5)
+            self.brightness = cfg.get("displays").get("neopixel").get("brightness", 63)
             self.strip = PixelStrip(num=32,
                                     pin=18,
                                     freq_hz=800_000,
@@ -52,36 +70,21 @@ class NeoDisplay(Display):
             logger.error(f"Error connecting to neo-pixels: {err}")
             exit(1)
 
-
-    def update(self, x: int, y: int, values:tuple[int,int], delay: float = 0.1, hostname:str = None) -> None:
-        """Update the pixel at the specified row and column with the given color."""
+    def update(self, hi: int, si: int, values: tuple[int, int]) -> None:
+        """Update the display for a given host and sensor.
+        Args:
+            hi (int): Host index.
+            si (int): Sensor index.
+            values (tuple[int,int]): Values to display, e.g., (value, color_code).
+        """
+        sleep(self.timeout)
         if self.on <= datetime.now().time() < self.off:
             self.strip.setBrightness(self.brightness)
-            index = NeoDisplay.COLS * NeoDisplay.ROWS - x - 1 - (y * NeoDisplay.COLS)
-            if delay > 0.1:
-                color = -1 if values[0] != -1 else 0
-                self.strip.setPixelColor(index, NeoDisplay.COLORS[color])
-                self.strip.show()
-                sleep(delay)
-            self.strip.setPixelColor(index, NeoDisplay.COLORS[values[0]])
+            index = NeoDisplay.COLS * NeoDisplay.ROWS - hi - 1 - (si * NeoDisplay.COLS)
+            self.strip.setPixelColor(index, NeoDisplay.COLORS[-1])
+            self.strip.show()
+            sleep(0.3)
+            self.strip.setPixelColor(index, NeoDisplay.COLORS[values[1]])
         else:
             self.strip.setBrightness(0)
         self.strip.show()
-
-
-class NeoDisplayMac(Display):
-    """Display class to manage the LED strip and its configuration for Mac."""
-    ROWS, COLS = 4, 8
-    COLORS = "🔵🔵🟢🟧🔴🟪⚪⚫"
-
-    def __init__(self, _: dict):
-        self.buffer = ["⚫"] * 32
-
-    def update(self, x: int, y: int, values:tuple[int,int], delay: float = 0.1, hostname:str = None):
-        """Update the pixel at the specified row and column with the given color."""
-        self.buffer[x + NeoDisplayMac.COLS * y] = NeoDisplayMac.COLORS[values[0]]
-        screen = []
-        for r in range(NeoDisplayMac.ROWS):
-            screen += self.buffer[r * NeoDisplayMac.COLS:(r + 1) * NeoDisplayMac.COLS]
-            screen += "\n"
-        print("".join(screen))

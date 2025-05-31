@@ -1,80 +1,104 @@
-""" InkDisplay class for e-ink displays."""
-import time
+""" InkDisplay class for e-ink displays.
+    https://www.waveshare.com/wiki/2.13inch_e-Paper_HAT+
+    Author: Wolf Paulus <wolf@paulus.com>
+"""
+from time import sleep, strftime
 import subprocess
+from datetime import datetime
+
+from PIL.ImageFont import FreeTypeFont
+
 from display import Display
-from log import logger
 from PIL import Image, ImageDraw, ImageFont
 from waveshare import epd2in13_V4
+from log import logger
 
-bold = ImageFont.truetype('DejaVuSans-Bold.ttf', 15)
-small = ImageFont.truetype('DejaVuSans.ttf', 15)
-tiny = ImageFont.truetype('DejaVuSans.ttf', 12)
-icons = ImageFont.truetype('fonts/materialdesignicons-webfont.ttf', 18)
+try:
+    logger.info("Loading fonts...")
+    bold = ImageFont.truetype('fonts/DejaVuSans-Bold.ttf', 15)
+    small = ImageFont.truetype('fonts/DejaVuSans.ttf', 15)
+    tiny = ImageFont.truetype('fonts/DejaVuSans.ttf', 12)
+    icons = ImageFont.truetype('fonts/materialdesignicons-webfont.ttf', 18)
+except OSError as e:
+    logger.error(f"Error loading fonts: {e}")
+
 
 class InkDisplay(Display):
     """Display class for e-ink displays."""
 
-    def __init__(self, config: dict):
+    def __init__(self, cfg: dict):
         """Initialize the e-ink display."""
         logger.info("init and clear the e-ink display")
-        self.hosts = config.get("epaper", {}).get("hosts", [])
+        self.active = False
+        self.cfg = cfg
+        self.all_hosts = cfg.get("hosts")
+        self.hosts = cfg.get("displays").get("epaper", {}).get("hosts", [])
+        self.timeout = cfg.get("displays").get("epaper").get("sensor_timeout", 0.5)
+        self.on = datetime.strptime(cfg.get("displays").get("epaper").get("on_"), "%H:%M").time()
+        self.off = datetime.strptime(cfg.get("displays").get("epaper").get("off_"), "%H:%M").time()
         self.epd = epd2in13_V4.EPD()
         self.counter = 0
         self.values = [0] * 16
         self.epd.init()
         self.epd.Clear()
         self._redraw()
-        time.sleep(1)
+        sleep(1)
 
-
-    def update(self, _: int, x: int, values: tuple[int,int], delay: float = 0.1, hostname:str = None):
+    def update(self, hi: int, si: int, values: tuple[int, int]):
         """Update the pixel at the specified row and column with the given color."""
-        if hostname not in self.hosts:
-            return # irrelevant host
-        y = self.hosts.index(hostname) # get the row index provided y is irrelevant
-        self.counter += 1
-        self.values[x + y * 4] = values[1]
-        if self.counter == 16:
-            self.counter = 0
-            self.draw.rectangle((65, 22, 249, 121), fill=1)  # clear partial image
-            for row in range(4):
-                y = 22 + 20 * row
-                for col in range(4):
-                    x = 65 + 45 * col
-                    self.draw.text((x, y), f"{self.values[col + row*4]:4}", font=small, fill=0)
-
-            self.draw.line([(65, 103), (254, 103)], fill=0, width=1)
-            self.draw_mixed_font_text((65, 105), self.get_footer())
-            self.epd.displayPartial(self.epd.getbuffer(self.image.rotate(180)))
-
+        sleep(self.timeout)
+        if self.on <= datetime.now().time() < self.off:
+            hostname = self.all_hosts[hi].get("hostname")
+            if self.all_hosts[hi].get("hostname") in self.hosts:
+                hi = self.hosts.index(hostname)
+                self.counter += 1
+                self.values[si + hi * 4] = values[0]
+                if self.counter == len(self.values):
+                    self.counter = 0
+                    self.draw.rectangle((65, 22, 249, 121), fill=1)  # clear partial image
+                    for row in range(4):
+                        y = 22 + 20 * row
+                        for col in range(4):
+                            x = 65 + 45 * col
+                            self.draw.text((x, y), f"{self.values[col + row * 4]:4}", font=small, fill=0)
+                    self.draw.line([(65, 103), (254, 103)], fill=0, width=1)
+                    self.draw_mixed_font_text((65, 105), self.get_footer())
+                    self.epd.displayPartial(self.epd.getbuffer(self.image.rotate(180)))
+        else:
+            if self.active:
+                # turn off the display
+                self.epd.init()
+                self.epd.Clear(0xFF)
+                self.epd.sleep()
+                self.active = False
 
     def _redraw(self) -> None:
         """Redraw the e-ink display."""
-        logger.info("Creating a white image, matching the display size...")
-        self.image = Image.new('1', (self.epd.height, self.epd.width), 1)
-        self.draw = ImageDraw.Draw(self.image)
-        self.draw_mixed_font_text((0, 1), self.get_header())
-        self.draw.line([(0, 20), (249, 20)], fill=0, width=1)
-        self.draw.line([(0, 103), (249, 103)], fill=0, width=1)
-        self.epd.displayPartBaseImage(self.epd.getbuffer(self.image.rotate(180)))
-        for i in range(len(self.hosts)):
-            host = f"{(self.hosts[i])[:10]}"
-            y = 22 + 20 * i
-            self.draw.text((0, y), host, font=bold, fill=0)
-        self.epd.displayPartial(self.epd.getbuffer(self.image.rotate(180)))
+        if not self.active:
+            logger.info("Creating a white image, matching the display size...")
+            self.image = Image.new('1', (self.epd.height, self.epd.width), 1)
+            self.draw = ImageDraw.Draw(self.image)
+            self.draw_mixed_font_text((0, 1), self.get_header())
+            self.draw.line([(0, 20), (249, 20)], fill=0, width=1)
+            self.draw.line([(0, 103), (249, 103)], fill=0, width=1)
+            self.epd.displayPartBaseImage(self.epd.getbuffer(self.image.rotate(180)))
+            for i in range(len(self.hosts)):
+                host = f"{(self.hosts[i])[:10]}"
+                y = 22 + 20 * i
+                self.draw.text((0, y), host, font=bold, fill=0)
+            self.epd.displayPartial(self.epd.getbuffer(self.image.rotate(180)))
+            self.active = True
 
-
-    def draw_mixed_font_text(self, xy, text_data, color=0):
+    def draw_mixed_font_text(self, xy: tuple[int, int], text_data: list[tuple[str, FreeTypeFont]], color=0):
         """Draws text with mixed fonts and styles."""
         current_x, current_y = xy
-        for item in text_data:
-            text, font = item
+        for text, font in text_data:
             self.draw.text((current_x, current_y), text, fill=color, font=font)
             text_width = self.draw.textbbox((current_x, current_y), text, font=font)[2]  # Calculate text width
             current_x = text_width  # Update starting X position
 
     @staticmethod
-    def get_header() -> list[tuple]:
+    def get_header() -> list[tuple[str, FreeTypeFont]]:
         """Get the header for the e-ink display."""
         spaces = " " * 2
         return [
@@ -87,37 +111,34 @@ class InkDisplay(Display):
             ("󰍛", icons),  # mem
             ("%" + spaces, small),
             ("󰆼", icons),  # disk space
-            ("%", small),
-            # 󰖩 󰅐 󰄴 󰍶
+            ("%", small)
         ]
 
     @staticmethod
-    def get_footer() -> list[tuple]:
+    def get_footer() -> list[tuple[str, FreeTypeFont]]:
         """Get the footer for the e-ink display."""
-        """ todo - get the wifi quality and signal strength """
         return [
             (" " * 2, tiny),
             ("󰅐", icons),
-            (f" {time.strftime('%H:%M:%S')}   ", tiny),
+            (f" {strftime('%H:%M:%S')}   ", tiny),
             ("󰖩", icons),
             (f" {InkDisplay.get_wifi_quality()}", tiny)  # iwconfig wlan0 | grep Quality
         ]
 
     @staticmethod
-    def get_wifi_quality()->str:
-        command = "/usr/sbin/iwconfig wlan0"
-        process = subprocess.Popen(command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output, error = process.communicate()
-
-        if error:
-            logger.error(f"Error: {error.decode('utf-8')}")
-            return "-/-"
-
-        output_str = output.decode("utf-8")
-        lines = output_str.splitlines()
-
-        wifi_data = ""
-        for line in lines:
-            if "Link Quality" in line:
-                wifi_data = line.split("Link Quality=")[1].split(" ")[0]
+    def get_wifi_quality() -> str:
+        """Get the WiFi quality using iwconfig."""
+        wifi_data = "-/-"
+        try:
+            command = "/usr/sbin/iwconfig wlan0"
+            process = subprocess.Popen(command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            output, error = process.communicate()
+            if not error:
+                for line in output.decode("utf-8").splitlines():
+                    if "Link Quality" in line:
+                        wifi_data = line.split("Link Quality=")[1].split(" ")[0]
+            else:
+                logger.error(f"Error: {error.decode('utf-8')}")
+        except Exception as err:
+            logger.error(f"Failed to get WiFi quality: {err}")
         return wifi_data

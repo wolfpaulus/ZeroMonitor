@@ -19,9 +19,9 @@ def draw_mixed_font_text(draw, xy, text_data, color=0):
 logging.basicConfig(level=logging.DEBUG)
 logging.info("Loading fonts...")
 
-bold = ImageFont.truetype('DejaVuSans-Bold.ttf', 15)
-small = ImageFont.truetype('DejaVuSans.ttf', 15)
-tiny = ImageFont.truetype('DejaVuSans.ttf', 12)
+bold = ImageFont.truetype('fonts/DejaVuSans-Bold.ttf', 15)
+small = ImageFont.truetype('fonts/DejaVuSans.ttf', 15)
+tiny = ImageFont.truetype('fonts/DejaVuSans.ttf', 12)
 icons = ImageFont.truetype('fonts/materialdesignicons-webfont.ttf', 18)
 
 
