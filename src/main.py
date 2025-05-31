@@ -31,12 +31,12 @@ if __name__ == "__main__":
                         sensor = ChainMap(host.get(class_, {}), sensor)
                         instance = Monitor.create_instance(class_, conn, sensor.get("cmd"), sensor.get("values"))
                         if instance is not None:
-                            display.update(hi, si, instance.probe(), hostname)
+                            display.update(hi, si, instance.probe())
                         else:
                             logger.error(f"Sensor {class_} not found. Skipping sensor probe for this host.")
                             display.update(hi, si, (-1, -1))
 
-            except Exception as err:
+            except OSError as err:
                 logger.warning(f"{host} seems to be offline. Skipping sensor probe(s) for this host.")
                 for s, sensor in enumerate(config.get("sensors").values()):
                     display.update(hi, s, (-1, -1))
