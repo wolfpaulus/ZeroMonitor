@@ -35,7 +35,6 @@ if __name__ == "__main__":
                         else:
                             logger.error(f"Sensor {class_} not found. Skipping sensor probe for this host.")
                             display.update(hi, si, (-1, -1))
-
             except OSError as err:
                 logger.warning(f"{host} seems to be offline. Skipping sensor probe(s) for this host.")
                 for s, sensor in enumerate(config.get("sensors").values()):

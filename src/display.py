@@ -84,7 +84,8 @@ class NeoDisplay(Display):
         sleep(self.timeout)
         if self.on <= datetime.now().time() < self.off:
             self.strip.setBrightness(self.brightness)
-            index = NeoDisplay.COLS * NeoDisplay.ROWS - hi - 1 - (si * NeoDisplay.COLS)
+            index = NeoDisplay.COLS * NeoDisplay.ROWS - si - 1 - (hi * NeoDisplay.COLS)
+
             self.strip.setPixelColor(index, NeoDisplay.COLORS[-1])
             self.strip.show()
             sleep(0.3)
