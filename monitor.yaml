@@ -3,7 +3,7 @@ displays:
   neopixel:
     brightness: 127 # Brightness of the strip (24-255)
     sensor_timeout: 1 # Pause after probing a sensor
-    off_: "20:00" # Turn off at 20:00, on at 6:30
+    off_: "20:40" # Turn off at 20:00, on at 6:30
     on_: "6:30" # Turn on at 6:30, off at 8:00
   epaper:
     hosts:
@@ -12,7 +12,7 @@ displays:
       - apollo
       - artemis
     sensor_timeout: 1 # Pause after probing a sensor
-    off_: "20:00" # Turn off at 20:00, on at 6:30
+    off_: "20:40" # Turn off at 20:00, on at 6:30
     on_: "6:30" # Turn on at 6:30, off at 8:00
 
 sensors: # All sensors to monitor

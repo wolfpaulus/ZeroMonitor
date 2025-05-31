@@ -48,6 +48,8 @@ class InkDisplay(Display):
         """Update the pixel at the specified row and column with the given color."""
         sleep(self.timeout)
         if self.on <= datetime.now().time() < self.off:
+            if not self.active: # if the display is not active, redraw it
+                self._redraw()
             hostname = self.all_hosts[hi].get("hostname")
             if self.all_hosts[hi].get("hostname") in self.hosts:
                 hi = self.hosts.index(hostname)

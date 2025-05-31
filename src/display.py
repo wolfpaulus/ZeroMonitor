@@ -1,4 +1,6 @@
-""" Display management module for LED strip control."""
+""" Display management module for LED strip control.
+    Author: Wolf Paulus <wolf@paulus.com>
+"""
 from abc import ABC, abstractmethod
 from time import sleep
 from datetime import datetime
@@ -34,6 +36,8 @@ class Display(ABC):
 
 class NeoDisplay(Display):
     """Display class to manage the LED strip and its configuration.
+        https://www.waveshare.com/wiki/RGB_LED_HAT
+
         ROWS = 4 COLS = 8 Each host has one column
         host = h : 0 .. 7 sensor = i : 0 .. 3
         31 30 29 28 27 26 25 24   x = ROWS * COLS - 1 - h - (i * COLS)
