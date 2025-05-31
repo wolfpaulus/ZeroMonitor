@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- coding:utf-8 -*-
 
-# from . import I2C_config
 import time
 from . import I2C_config
 import smbus

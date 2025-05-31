@@ -90,7 +90,7 @@ class NeoDisplay(Display):
             # hi = 7, si = 3 -> 31 - 7 - 3 * 8 = 0
             self.strip.setPixelColor(index, NeoDisplay.COLORS[-1])
             self.strip.show()
-            sleep(0.3)
+            sleep(0.25)
             self.strip.setPixelColor(index, NeoDisplay.COLORS[values[1]])
         else:
             self.strip.setBrightness(0)

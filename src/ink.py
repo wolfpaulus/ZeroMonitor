@@ -1,16 +1,17 @@
-""" InkDisplay class for e-ink displays.
+"""
+    InkDisplay class for e-ink displays.
     https://www.waveshare.com/wiki/2.13inch_e-Paper_HAT+
     Author: Wolf Paulus <wolf@paulus.com>
 """
-from time import sleep, strftime
 import subprocess
+from time import sleep, strftime
 from datetime import datetime
 
 from PIL.ImageFont import FreeTypeFont
 
 from display import Display
 from PIL import Image, ImageDraw, ImageFont
-from waveshare import epd2in13_V4
+from waveshare.epd2in13_V4 import EPD
 from log import logger
 
 try:
@@ -36,16 +37,46 @@ class InkDisplay(Display):
         self.timeout = cfg.get("displays").get("epaper").get("sensor_timeout", 0.5)
         self.on = datetime.strptime(cfg.get("displays").get("epaper").get("on_"), "%H:%M").time()
         self.off = datetime.strptime(cfg.get("displays").get("epaper").get("off_"), "%H:%M").time()
-        self.epd = epd2in13_V4.EPD()
+        self.epd = EPD()
+        self.image = None
+        self.draw = None
         self.counter = 0
         self.values = [0] * 16
-        self.epd.init()
-        self.epd.Clear()
-        self._redraw()
-        sleep(1)
+        self.init()
+
+    def init(self) -> None:
+        """ Initialize the e-ink display and prepare for partial updates."""
+        if not self.active:
+            self.epd.init()
+            self.epd.Clear()
+            logger.info("Creating a white image, matching the display size...")
+            self.image = Image.new('1', (self.epd.height, self.epd.width), 1)
+            self.draw = ImageDraw.Draw(self.image)
+            self.draw_mixed_font_text((0, 1), self.get_header())
+            self.draw.line([(0, 20), (249, 20)], fill=0, width=1)
+            self.draw.line([(0, 103), (249, 103)], fill=0, width=1)
+            self.epd.displayPartBaseImage(self.epd.getbuffer(self.image.rotate(180)))
+            for i in range(len(self.hosts)):
+                host = f"{(self.hosts[i])[:10]}"
+                y = 22 + 20 * i
+                self.draw.text((0, y), host, font=bold, fill=0)
+            self.epd.displayPartial(self.epd.getbuffer(self.image.rotate(180)))
+            self.active = True
+            sleep(1)
+
+    def sleep(self) -> None:
+        """Turn off the e-ink display."""
+        if self.active:
+            # turn off the display
+            self.epd.init()
+            self.epd.Clear(0xFF)
+            self.epd.sleep()
+            self.active = False
 
     def update(self, hi: int, si: int, values: tuple[int, int]):
-        """Update the pixel at the specified row and column with the given color.
+        """Update the display buffer at the specified row and column with the given value.
+        Each time 16 values have been received, the display will partially update.
+        At that time, the footer with time and WiFi quality will be redrawn as well.
         Args:
             hi (int): Host index. 0 .. 7
             si (int): Sensor index. 0 .. 3
@@ -53,8 +84,8 @@ class InkDisplay(Display):
         """
         sleep(self.timeout)
         if self.on <= datetime.now().time() < self.off:
-            if not self.active: # if the display is not active, redraw it
-                self._redraw()
+            if not self.active:  # if the display is not active, redraw it
+                self.init()
             hostname = self.all_hosts[hi].get("hostname")
             if self.all_hosts[hi].get("hostname") in self.hosts:
                 hi = self.hosts.index(hostname)
@@ -72,29 +103,7 @@ class InkDisplay(Display):
                     self.draw_mixed_font_text((65, 105), self.get_footer())
                     self.epd.displayPartial(self.epd.getbuffer(self.image.rotate(180)))
         else:
-            if self.active:
-                # turn off the display
-                self.epd.init()
-                self.epd.Clear(0xFF)
-                self.epd.sleep()
-                self.active = False
-
-    def _redraw(self) -> None:
-        """Redraw the e-ink display."""
-        if not self.active:
-            logger.info("Creating a white image, matching the display size...")
-            self.image = Image.new('1', (self.epd.height, self.epd.width), 1)
-            self.draw = ImageDraw.Draw(self.image)
-            self.draw_mixed_font_text((0, 1), self.get_header())
-            self.draw.line([(0, 20), (249, 20)], fill=0, width=1)
-            self.draw.line([(0, 103), (249, 103)], fill=0, width=1)
-            self.epd.displayPartBaseImage(self.epd.getbuffer(self.image.rotate(180)))
-            for i in range(len(self.hosts)):
-                host = f"{(self.hosts[i])[:10]}"
-                y = 22 + 20 * i
-                self.draw.text((0, y), host, font=bold, fill=0)
-            self.epd.displayPartial(self.epd.getbuffer(self.image.rotate(180)))
-            self.active = True
+            self.sleep()
 
     def draw_mixed_font_text(self, xy: tuple[int, int], text_data: list[tuple[str, FreeTypeFont]], color=0):
         """Draws text with mixed fonts and styles."""

@@ -1,4 +1,4 @@
-# Configuration file for monitoring system health and performance
+# Configuration file for monitoring systems' health and performance
 displays:
   neopixel:
     brightness: 127 # Brightness of the strip (24-255)
