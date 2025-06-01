@@ -1,8 +1,9 @@
 """
-    InkDisplay class for e-ink displays.
-    https://www.waveshare.com/wiki/2.13inch_e-Paper_HAT+
-    Author: Wolf Paulus <wolf@paulus.com>
+InkDisplay class for e-ink displays.
+https://www.waveshare.com/wiki/2.13inch_e-Paper_HAT+
+Author: Wolf Paulus <wolf@paulus.com>
 """
+
 import subprocess
 from time import sleep, strftime
 from datetime import datetime
@@ -16,10 +17,10 @@ from log import logger
 
 try:
     logger.info("Loading fonts...")
-    bold = ImageFont.truetype('fonts/DejaVuSans-Bold.ttf', 15)
-    small = ImageFont.truetype('fonts/DejaVuSans.ttf', 15)
-    tiny = ImageFont.truetype('fonts/DejaVuSans.ttf', 12)
-    icons = ImageFont.truetype('fonts/materialdesignicons-webfont.ttf', 18)
+    bold = ImageFont.truetype("fonts/DejaVuSans-Bold.ttf", 15)
+    small = ImageFont.truetype("fonts/DejaVuSans.ttf", 15)
+    tiny = ImageFont.truetype("fonts/DejaVuSans.ttf", 12)
+    icons = ImageFont.truetype("fonts/materialdesignicons-webfont.ttf", 18)
 except OSError as e:
     logger.error(f"Error loading fonts: {e}")
 
@@ -35,8 +36,12 @@ class InkDisplay(Display):
         self.all_hosts = cfg.get("hosts")
         self.hosts = cfg.get("displays").get("epaper", {}).get("hosts", [])
         self.timeout = cfg.get("displays").get("epaper").get("sensor_timeout", 0.5)
-        self.on = datetime.strptime(cfg.get("displays").get("epaper").get("on_"), "%H:%M").time()
-        self.off = datetime.strptime(cfg.get("displays").get("epaper").get("off_"), "%H:%M").time()
+        self.on = datetime.strptime(
+            cfg.get("displays").get("epaper").get("on_"), "%H:%M"
+        ).time()
+        self.off = datetime.strptime(
+            cfg.get("displays").get("epaper").get("off_"), "%H:%M"
+        ).time()
         self.epd = EPD()
         self.image = None
         self.draw = None
@@ -45,12 +50,12 @@ class InkDisplay(Display):
         self.init()
 
     def init(self) -> None:
-        """ Initialize the e-ink display and prepare for partial updates."""
+        """Initialize the e-ink display and prepare for partial updates."""
         if not self.active:
             self.epd.init()
             self.epd.Clear()
             logger.info("Creating a white image, matching the display size...")
-            self.image = Image.new('1', (self.epd.height, self.epd.width), 1)
+            self.image = Image.new("1", (self.epd.height, self.epd.width), 1)
             self.draw = ImageDraw.Draw(self.image)
             self.draw_mixed_font_text((0, 1), self.get_header())
             self.draw.line([(0, 20), (249, 20)], fill=0, width=1)
@@ -93,24 +98,35 @@ class InkDisplay(Display):
                 self.values[si + hi * 4] = values[0] if values[0] >= 0 else ""
                 if self.counter == len(self.values):
                     self.counter = 0
-                    self.draw.rectangle((65, 22, 249, 121), fill=1)  # clear partial image
+                    self.draw.rectangle(
+                        (65, 22, 249, 121), fill=1
+                    )  # clear partial image
                     for row in range(4):
                         y = 22 + 20 * row
                         for col in range(4):
                             x = 65 + 45 * col
-                            self.draw.text((x, y), f"{self.values[col + row * 4]:4}", font=small, fill=0)
+                            self.draw.text(
+                                (x, y),
+                                f"{self.values[col + row * 4]:4}",
+                                font=small,
+                                fill=0,
+                            )
                     self.draw.line([(65, 103), (254, 103)], fill=0, width=1)
                     self.draw_mixed_font_text((65, 105), self.get_footer())
                     self.epd.displayPartial(self.epd.getbuffer(self.image.rotate(180)))
         else:
             self.sleep()
 
-    def draw_mixed_font_text(self, xy: tuple[int, int], text_data: list[tuple[str, FreeTypeFont]], color=0):
+    def draw_mixed_font_text(
+        self, xy: tuple[int, int], text_data: list[tuple[str, FreeTypeFont]], color=0
+    ):
         """Draws text with mixed fonts and styles."""
         current_x, current_y = xy
         for text, font in text_data:
             self.draw.text((current_x, current_y), text, fill=color, font=font)
-            text_width = self.draw.textbbox((current_x, current_y), text, font=font)[2]  # Calculate text width
+            text_width = self.draw.textbbox((current_x, current_y), text, font=font)[
+                2
+            ]  # Calculate text width
             current_x = text_width  # Update starting X position
 
     @staticmethod
@@ -127,7 +143,7 @@ class InkDisplay(Display):
             ("󰍛", icons),  # mem
             ("%" + spaces, small),
             ("󰆼", icons),  # disk space
-            ("%", small)
+            ("%", small),
         ]
 
     @staticmethod
@@ -138,7 +154,10 @@ class InkDisplay(Display):
             ("󰅐", icons),
             (f" {strftime('%H:%M:%S')}   ", tiny),
             ("󰖩", icons),
-            (f" {InkDisplay.get_wifi_quality()}", tiny)  # iwconfig wlan0 | grep Quality
+            (
+                f" {InkDisplay.get_wifi_quality()}",
+                tiny,
+            ),  # iwconfig wlan0 | grep Quality
         ]
 
     @staticmethod
@@ -147,7 +166,9 @@ class InkDisplay(Display):
         wifi_data = "-/-"
         try:
             command = "/usr/sbin/iwconfig wlan0"
-            process = subprocess.Popen(command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            process = subprocess.Popen(
+                command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
             output, error = process.communicate()
             if not error:
                 for line in output.decode("utf-8").splitlines():

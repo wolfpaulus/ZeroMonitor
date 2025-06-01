@@ -1,4 +1,5 @@
-"""" Tests for the monitor module """
+""" " Tests for the monitor module"""
+
 from yaml import safe_load
 
 from monitor import Connection, Monitor
@@ -26,6 +27,7 @@ def test_color_code():
     assert Monitor.color_code(70, values) == 4
     assert Monitor.color_code(71, values) == 5
 
+
 def test_probe():
     with open("../monitor.yaml") as file:
         config = safe_load(file)
@@ -37,5 +39,3 @@ def test_probe():
             instance = Monitor.create_instance(name, conn, cmd, values)
             val, col = instance.probe()
             assert col != -1 and val != -1
-
-

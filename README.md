@@ -18,6 +18,14 @@ using a strip of NeoPixels — one (or more) Pixels per host.
   - Check for updates from GitHub
   - Redeploy itself if an update is available
 
+## BOM (Bill of Materials) <= $50
+- [Raspberry Pi Zero 2 W](https://www.raspberrypi.com/products/raspberry-pi-zero-2-w/) $15
+- [NeoPixels, e.g. 8x NeoPixel sticks](https://www.waveshare.com/product/raspberry-pi/hats/led-buttons/rgb-led-hat.htm) $11
+- [Alternatively: E-Paper display, e.g. Waveshare 2.13inch e-Paper HAT+](https://www.waveshare.com/product/raspberry-pi/displays/e-paper/2.13inch-e-paper-hat-plus.htm) $17
+- [Power supply - 5V, 2A recommended](https://www.raspberrypi.com/products/micro-usb-power-supply/) $9
+- (reasonably fast) MicroSD card (8GB or larger) $8
+
+
 ## Example Monitors
 - CPU temperature
 - CPU usage
