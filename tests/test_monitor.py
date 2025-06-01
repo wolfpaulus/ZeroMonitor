@@ -33,6 +33,8 @@ def test_probe():
         config = safe_load(file)
     with Connection(test_host) as conn:
         for s in config.get("sensors").values():
+            if conn is None:
+                return
             name = s.get("name")
             cmd = s.get("cmd")
             values = s.get("values")
