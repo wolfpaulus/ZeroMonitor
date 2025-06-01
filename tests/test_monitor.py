@@ -29,7 +29,7 @@ def test_color_code():
 
 
 def test_probe():
-    with open("../monitor.yaml") as file:
+    with open("monitor.yaml") as file:
         config = safe_load(file)
     with Connection(test_host) as conn:
         for s in config.get("sensors").values():
