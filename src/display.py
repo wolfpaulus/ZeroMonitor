@@ -60,11 +60,11 @@ class NeoDisplay(Display):
     #     Color(0, 0, 0),
     # ]
     COLORS = [
-        Color(0, 0, 63),
-        Color(0, 31, 15),
-        Color(0, 63, 0),
-        Color(31, 15, 0),
-        Color(63, 0, 0),
+        Color(0, 0, 31),
+        Color(0, 15, 15),
+        Color(0, 31, 0),
+        Color(15, 15, 0),
+        Color(31, 0, 0),
         Color(31, 0, 15),
         Color(0, 0, 0),
     ]
