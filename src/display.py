@@ -50,13 +50,22 @@ class NeoDisplay(Display):
     """
 
     ROWS, COLS = 4, 8
+    # COLORS = [
+    #     Color(0, 0, 15),
+    #     Color(0, 9, 6),
+    #     Color(0, 15, 0),
+    #     Color(13, 4, 0),
+    #     Color(15, 0, 0),
+    #     Color(9, 0, 6),
+    #     Color(0, 0, 0),
+    # ]
     COLORS = [
-        Color(0, 0, 15),
-        Color(0, 9, 6),
-        Color(0, 15, 0),
-        Color(13, 4, 0),
-        Color(15, 0, 0),
-        Color(9, 0, 6),
+        Color(0, 0, 63),
+        Color(0, 31, 15),
+        Color(0, 63, 0),
+        Color(31, 15, 0),
+        Color(63, 0, 0),
+        Color(31, 0, 15),
         Color(0, 0, 0),
     ]
 
