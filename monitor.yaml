@@ -8,9 +8,9 @@ displays:
   epaper:
     hosts:
       - alpha
+      - beta
       - apollo
       - artemis
-      - omega
     sensor_timeout: 1 # Pause after probing a sensor
     off_: "20:40" # Turn off at 20:00, on at 6:30
     on_: "6:30" # Turn on at 6:30, off at 8:00
@@ -30,8 +30,8 @@ sensors: # All sensors to monitor
     cmd: cat /sys/class/thermal/thermal_zone0/temp # CPU package temperature
     values: # low, normal, high
       - 50
-      - 65
-      - 80
+      - 62
+      - 75
   MemoryUsage:
     name: MemoryUsage
     description: Memory usage percentage
@@ -51,20 +51,20 @@ sensors: # All sensors to monitor
 
 hosts: # List of hosts to monitor
   - hostname: alpha # Intel NUC Core i5
-    details: NUC CoreI5
+    details: NUC CoreI5 16GB 256GB SSD
     CpuTemperature:
       cmd: cat /sys/class/thermal/thermal_zone2/temp # CPU package temperature
 
   - hostname: beta # Intel NUC Core i3
-    details: NUC CoreI3
+    details: NUC CoreI3 16GB 128GB SSD
     CpuTemperature:
       cmd: cat /sys/class/thermal/thermal_zone2/temp # CPU package temperature
 
   - hostname: apollo # Raspberry Pi 5
-    details: RPi5 8GB
+    details: RPi5 8GB  256GB SSD
 
   - hostname: artemis # Raspberry Pi 5
-    details: RPi5 16GB
+    details: RPi5 16GB 500GB SSD
 
   - hostname: omega # INTEL Atom C2538 16 GB (req. # synogear install)
     details: DS 1517+
@@ -74,7 +74,7 @@ hosts: # List of hosts to monitor
       cmd: cat /sys/class/hwmon/hwmon0/device/temp2_input
 
   - hostname: delta # Raspberry Zero
-    details: RPi Zero
+    details: RPi Zero 512 MB RAM
 
   - hostname: epsilon # Raspberry Zero 2
-    details: RPi Zero 2
+    details: RPi Zero 2 512 MB RAM

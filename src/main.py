@@ -14,7 +14,7 @@ from log import logger
 
 if __name__ == "__main__":
     try:
-        with open("monitor.yaml") as file:
+        with open("monitor.yaml", encoding='utf-8') as file:
             config = safe_load(file)
             logger.info("Configuration loaded successfully.")
     except OSError as err:

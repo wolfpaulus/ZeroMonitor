@@ -50,37 +50,28 @@ class NeoDisplay(Display):
     """
 
     ROWS, COLS = 4, 8
-    # COLORS = [
-    #     Color(0, 0, 15),
-    #     Color(0, 9, 6),
-    #     Color(0, 15, 0),
-    #     Color(13, 4, 0),
-    #     Color(15, 0, 0),
-    #     Color(9, 0, 6),
-    #     Color(0, 0, 0),
-    # ]
     COLORS = [
         Color(0, 0, 31),
         Color(0, 15, 15),
         Color(0, 31, 0),
         Color(15, 15, 0),
         Color(31, 0, 0),
-        Color(31, 0, 15),
+        Color(31, 0, 31),
         Color(0, 0, 0),
     ]
 
     def __init__(self, cfg: dict):
         try:
             self.on = datetime.strptime(
-                cfg.get("displays").get("neopixel").get("on_"), "%H:%M"
+                cfg.get("displays",{}).get("neopixel").get("on_"), "%H:%M"
             ).time()
             self.off = datetime.strptime(
-                cfg.get("displays").get("neopixel").get("off_"), "%H:%M"
+                cfg.get("displays",{}).get("neopixel").get("off_"), "%H:%M"
             ).time()
             self.timeout = (
-                cfg.get("displays").get("neopixel").get("sensor_timeout", 0.5)
+                cfg.get("displays",{}).get("neopixel").get("sensor_timeout", 0.5)
             )
-            self.brightness = cfg.get("displays").get("neopixel").get("brightness", 63)
+            self.brightness = cfg.get("displays",{}).get("neopixel").get("brightness", 63)
             self.strip = PixelStrip(
                 num=32,
                 pin=18,

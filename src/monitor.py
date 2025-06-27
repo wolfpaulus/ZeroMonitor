@@ -21,7 +21,8 @@ class Connection:
         self.client.load_system_host_keys()
         self.client.set_missing_host_key_policy(AutoAddPolicy())
         self.config = SSHConfig()
-        self.config.parse(open(os.path.expanduser("~/.ssh/config")))
+        with open(os.path.expanduser("~/.ssh/config"), encoding='utf-8') as f:
+            self.config.parse(f)
 
     def connect(self) -> None:
         """Establish the SSH connection"""
@@ -86,10 +87,10 @@ class Monitor:
         self.values = values
 
     @abstractmethod
-    def probe(self) -> (int, int):
+    def probe(self) -> tuple[int, int]:
         """Probe the system for information
         Returns: tuple of (measured value, color_code based on thresholds)"""
-        ...
+        raise NotImplementedError("Subclasses must implement the probe method.")
 
     @staticmethod
     def color_code(v: int | int, values: list[int]) -> int:
@@ -122,10 +123,10 @@ class CpuTemperature(Monitor):
     53692
     """
 
-    def probe(self) -> (int, int):
+    def probe(self) -> tuple[int, int]:
         """Probe the CPU temperature in Celsius"""
         try:
-            stdin, stdout, stderr = self.client.exec_command(self.cmd)
+            _, stdout, _ = self.client.exec_command(self.cmd)
             temperature = round(int(stdout.read().decode()) / 1000)
             logger.debug(f"CPU temperature: {temperature}°C")
             return temperature, Monitor.color_code(temperature, self.values)
@@ -140,10 +141,10 @@ class CpuUsage(Monitor):
     2.78
     """
 
-    def probe(self) -> (int, int):
+    def probe(self) -> tuple[int, int]:
         """Probe the CPU Usage in percent"""
         try:
-            stdin, stdout, stderr = self.client.exec_command(self.cmd)
+            _, stdout, _ = self.client.exec_command(self.cmd)
             usage = round(float(stdout.read().decode()) + 0.5)
             logger.debug(f"CPU usage: {usage} %")
             return usage, Monitor.color_code(usage, self.values)
@@ -160,13 +161,14 @@ class MemoryUsage(Monitor):
     Swap:              0           0           0
     """
 
-    def probe(self) -> (int, int):
+    def probe(self) -> tuple[int, int]:
         """Probe the Memory"""
         try:
-            stdin, stdout, stderr = self.client.exec_command(self.cmd)
+            _, stdout, _ = self.client.exec_command(self.cmd)
             texts = stdout.read().decode().split("\n")
             if len(texts) < 3:
-                logger.warn("Memory usage information is not available.\n{texts}")
+                logger.warn(
+                    "Memory usage information is not available.\n{texts}")
                 return -1, -1
             total, used = int(texts[1].split()[1]), int(texts[1].split()[2])
             usage = round(used * 100 / total)  # Round to nearest integer
@@ -184,15 +186,17 @@ class DiskUsage(Monitor):
     /dev/mmcblk0p2  14719576 3318572  10753180  24% /
     """
 
-    def probe(self) -> (int, int):
+    def probe(self) -> tuple[int, int]:
         """Probe the Disk usage"""
         try:
-            stdin, stdout, stderr = self.client.exec_command(self.cmd)
+            _, stdout, _ = self.client.exec_command(self.cmd)
             texts = stdout.read().decode().split("\n")
             if len(texts) < 2:
-                logger.warn("Disk usage information is not available.\n{texts}")
+                logger.warn(
+                    "Disk usage information is not available.\n{texts}")
                 return -1, -1
-            usage = int(texts[1].split()[-2][:-1])  # Get the second last value (Used)
+            # Get the second last value (Used)
+            usage = int(texts[1].split()[-2][:-1])
             logger.debug(f"Disk usage: {usage} %")
             return usage, Monitor.color_code(usage, self.values)
         except ValueError as e:

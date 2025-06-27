@@ -34,13 +34,14 @@ class InkDisplay(Display):
         self.active = False
         self.cfg = cfg
         self.all_hosts = cfg.get("hosts")
-        self.hosts = cfg.get("displays").get("epaper", {}).get("hosts", [])
-        self.timeout = cfg.get("displays").get("epaper").get("sensor_timeout", 0.5)
+        self.hosts = cfg.get("displays", {}).get("epaper", {}).get("hosts", [])
+        self.timeout = cfg.get("displays", {}).get(
+            "epaper").get("sensor_timeout", 0.5)
         self.on = datetime.strptime(
-            cfg.get("displays").get("epaper").get("on_"), "%H:%M"
+            cfg.get("displays", {}).get("epaper").get("on_"), "%H:%M"
         ).time()
         self.off = datetime.strptime(
-            cfg.get("displays").get("epaper").get("off_"), "%H:%M"
+            cfg.get("displays", {}).get("epaper").get("off_"), "%H:%M"
         ).time()
         self.epd = EPD()
         self.image = None
@@ -60,11 +61,16 @@ class InkDisplay(Display):
             self.draw_mixed_font_text((0, 1), self.get_header())
             self.draw.line([(0, 20), (249, 20)], fill=0, width=1)
             self.draw.line([(0, 103), (249, 103)], fill=0, width=1)
-            self.epd.displayPartBaseImage(self.epd.getbuffer(self.image.rotate(180)))
-            for i in range(len(self.hosts)):
-                host = f"{(self.hosts[i])[:10]}"
+            self.epd.displayPartBaseImage(
+                self.epd.getbuffer(self.image.rotate(180)))
+            # for i in range(len(self.hosts)):
+            #     host = f"{(self.hosts[i])[:10]}"
+            #     y = 22 + 20 * i
+            #     self.draw.text((0, y), host, font=bold, fill=0)
+            for i, host in enumerate(self.hosts):
                 y = 22 + 20 * i
-                self.draw.text((0, y), host, font=bold, fill=0)
+                self.draw.text((0, y), host[:10], font=bold, fill=0)
+
             self.epd.displayPartial(self.epd.getbuffer(self.image.rotate(180)))
             self.active = True
             sleep(1)
@@ -113,7 +119,8 @@ class InkDisplay(Display):
                             )
                     self.draw.line([(65, 103), (254, 103)], fill=0, width=1)
                     self.draw_mixed_font_text((65, 105), self.get_footer())
-                    self.epd.displayPartial(self.epd.getbuffer(self.image.rotate(180)))
+                    self.epd.displayPartial(
+                        self.epd.getbuffer(self.image.rotate(180)))
         else:
             self.sleep()
 
@@ -173,7 +180,8 @@ class InkDisplay(Display):
             if not error:
                 for line in output.decode("utf-8").splitlines():
                     if "Link Quality" in line:
-                        wifi_data = line.split("Link Quality=")[1].split(" ")[0]
+                        wifi_data = line.split("Link Quality=")[
+                            1].split(" ")[0]
             else:
                 logger.error(f"Error: {error.decode('utf-8')}")
         except Exception as err:
