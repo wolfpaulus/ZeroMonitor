@@ -20,7 +20,8 @@ if __name__ == "__main__":
     except OSError as err:
         logger.error(f"Error loading configuration file. {err}")
         exit(1)
-    display = InkDisplay(config) if Display.has_epaper() else NeoDisplay(config)
+    display = InkDisplay(
+        config) if Display.has_epaper() else NeoDisplay(config)
 
     while True:
         for hi, host in enumerate(
@@ -35,7 +36,8 @@ if __name__ == "__main__":
                         class_ = sensor.get("name")
                         sensor = ChainMap(host.get(class_, {}), sensor)
                         instance = Monitor.create_instance(
-                            class_, conn, sensor.get("cmd"), sensor.get("values")
+                            class_, conn, sensor.get(
+                                "cmd"), sensor.get("values")
                         )
                         if instance is not None:
                             display.update(hi, si, instance.probe())

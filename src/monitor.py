@@ -90,7 +90,8 @@ class Monitor:
     def probe(self) -> tuple[int, int]:
         """Probe the system for information
         Returns: tuple of (measured value, color_code based on thresholds)"""
-        raise NotImplementedError("Subclasses must implement the probe method.")
+        raise NotImplementedError(
+            "Subclasses must implement the probe method.")
 
     @staticmethod
     def color_code(v: int | int, values: list[int]) -> int:
@@ -192,7 +193,7 @@ class DiskUsage(Monitor):
             _, stdout, _ = self.client.exec_command(self.cmd)
             texts = stdout.read().decode().split("\n")
             if len(texts) < 2:
-                logger.warn(
+                logger.warning(
                     "Disk usage information is not available.\n{texts}")
                 return -1, -1
             # Get the second last value (Used)

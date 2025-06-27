@@ -63,15 +63,17 @@ class NeoDisplay(Display):
     def __init__(self, cfg: dict):
         try:
             self.on = datetime.strptime(
-                cfg.get("displays",{}).get("neopixel").get("on_"), "%H:%M"
+                cfg.get("displays", {}).get("neopixel").get("on_"), "%H:%M"
             ).time()
             self.off = datetime.strptime(
-                cfg.get("displays",{}).get("neopixel").get("off_"), "%H:%M"
+                cfg.get("displays", {}).get("neopixel").get("off_"), "%H:%M"
             ).time()
             self.timeout = (
-                cfg.get("displays",{}).get("neopixel").get("sensor_timeout", 0.5)
+                cfg.get("displays", {}).get(
+                    "neopixel").get("sensor_timeout", 0.5)
             )
-            self.brightness = cfg.get("displays",{}).get("neopixel").get("brightness", 63)
+            self.brightness = cfg.get("displays", {}).get(
+                "neopixel").get("brightness", 63)
             self.strip = PixelStrip(
                 num=32,
                 pin=18,
