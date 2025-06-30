@@ -53,6 +53,7 @@ class Connection:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
+
 class PersitentConncetion(Connection):
     """Persistent SSH connection class
     This class keeps the connection open for multiple probes.
