@@ -50,7 +50,7 @@ class Connection:
         self.connect()
         return self.client
 
-    def __exit__(self, _, _, _):
+    def __exit__(self, x, y, z):
         self.close()
 
 
