@@ -53,6 +53,35 @@ class Connection:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
+class PersitentConncetion(Connection):
+    """Persistent SSH connection class
+    This class keeps the connection open for multiple probes.
+    """
+    ssh_clients = {}
+
+    def __init__(self, hostname: str) -> None:
+        """Initialize the PersistentConnection class with a hostname"""
+        if hostname in self.ssh_clients:
+            self.client = self.ssh_clients[hostname]
+            if not self.client.get_transport() or not self.client.get_transport().is_active():
+                logger.info(f"Reconnecting to {hostname} as the connection is inactive.")
+                super().close()
+                self.client = None
+        else:
+            self.client = None
+        if self.client is None:
+            super().__init__(hostname)
+            self.connect()
+            self.ssh_clients[hostname] = self.client
+
+    def close(self) -> None:
+        """Close the SSH connection"""
+        """Override to keep the connection open"""
+        # Do not close the connection, just set it to None
+        # self.client.close()
+        # self.client = None
+        pass
+
 
 class Monitor:
     """Base class for SSH connection monitoring"""

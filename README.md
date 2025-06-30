@@ -72,9 +72,12 @@ Host beta
 Depending on the display you want to use, you need to install different libraries.
 Check here for details: [./waveshare/README.md](waveshare/README.md) 
 
-# 🔄 CI/CD-Style Auto-Update
-ZeroMonitor can automatically check for updates from GitHub and redeploy itself using a cron job.
-For more details, see the [./cicd/README.md](cicd/README.md) file.
-## Ansible Playbook
+### Ansible Playbook
 This ansible playbook can be used to install ZeroMonitor on a Raspberry Pi:
 [./ansible/playbooks/setup-zero_mon.yml]()
+
+## 🔄 CI/CD-Style Auto-Update
+ZeroMonitor can automatically check for updates from GitHub and redeploy itself using a cron job.
+For more details, see the [./cicd/README.md](cicd/README.md) file.
+
+
