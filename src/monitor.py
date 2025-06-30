@@ -50,45 +50,15 @@ class Connection:
         self.connect()
         return self.client
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, _, _, _):
         self.close()
-
-
-class PersitentConncetion(Connection):
-    """Persistent SSH connection class
-    This class keeps the connection open for multiple probes.
-    """
-    ssh_clients = {}
-
-    def __init__(self, hostname: str) -> None:
-        """Initialize the PersistentConnection class with a hostname"""
-        if hostname in self.ssh_clients:
-            self.client = self.ssh_clients[hostname]
-            if not self.client.get_transport() or not self.client.get_transport().is_active():
-                logger.info(f"Reconnecting to {hostname} as the connection is inactive.")
-                super().close()
-                self.client = None
-        else:
-            self.client = None
-        if self.client is None:
-            super().__init__(hostname)
-            self.connect()
-            self.ssh_clients[hostname] = self.client
-
-    def close(self) -> None:
-        """Close the SSH connection"""
-        """Override to keep the connection open"""
-        # Do not close the connection, just set it to None
-        # self.client.close()
-        # self.client = None
-        pass
 
 
 class Monitor:
     """Base class for SSH connection monitoring"""
 
     @classmethod
-    def create_instance(cls, class_name_str, *args, **kwargs):
+    def create_instance(cls, class_name_str: str, *args, **kwargs):
         """
         Instantiates a sensor given its name as a string.
         Args:
@@ -134,15 +104,15 @@ class Monitor:
         """
         if v < 0:
             return -1  # Error case, no value available
-        elif v <= values[0]:
+        if v <= values[0]:
             return 0  # Below or at the first threshold
-        elif v <= values[1] - (values[1] - values[0]) / 2:
+        if v <= values[1] - (values[1] - values[0]) / 2:
             return 1  # Above first threshold but way below second threshold
-        elif v <= values[1]:
+        if v <= values[1]:
             return 2  # Below or at the second threshold
-        elif v <= values[2] - (values[2] - values[1]) / 2:
+        if v <= values[2] - (values[2] - values[1]) / 2:
             return 3  # Above second threshold but way below third threshold
-        elif v <= values[2]:
+        if v <= values[2]:
             return 4  # Below or at the third threshold
         else:
             return 5  # Above the third threshold.
@@ -198,8 +168,7 @@ class MemoryUsage(Monitor):
             _, stdout, _ = self.client.exec_command(self.cmd)
             texts = stdout.read().decode().split("\n")
             if len(texts) < 3:
-                logger.warn(
-                    "Memory usage information is not available.\n{texts}")
+                logger.warning(f"Memory usage information is not available.\n{texts}")
                 return -1, -1
             total, used = int(texts[1].split()[1]), int(texts[1].split()[2])
             usage = round(used * 100 / total)  # Round to nearest integer

@@ -6,7 +6,7 @@ Author: Wolf Paulus wolf@paulus.com
 from time import sleep
 from collections import ChainMap
 from yaml import safe_load
-from monitor import PersistentConnection, Monitor
+from monitor import Connection, Monitor
 from display import Display, NeoDisplay
 from ink import InkDisplay
 
@@ -29,7 +29,7 @@ if __name__ == "__main__":
         ):  # iterate over hosts currently 7 configured
             hostname = host.get("hostname")
             try:
-                with PersistentConnection(hostname) as conn:
+                with Connection(hostname) as conn:
                     for si, sensor in enumerate(
                         config.get("sensors").values()
                     ):  # iterate over sensors
