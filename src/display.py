@@ -1,7 +1,7 @@
 """Display management module for LED strip control.
 Author: Wolf Paulus <wolf@paulus.com>
 """
-
+import sys
 from abc import ABC, abstractmethod
 from time import sleep
 from datetime import datetime
@@ -21,19 +21,16 @@ class Display(ABC):
             si (int): Sensor index.
             values (tuple[int,int]): Values to display, e.g., (value, color_code).
         """
-        pass
 
     @staticmethod
     def has_epaper() -> bool:
         """Check if the display has an e-Paper display."""
         try:
             rtc = DS3231.DS3231(add=0x68)
-            logger.info(
-                f"E-Paper Display Temperature {rtc.Read_Temperature():.2f} Celsius"
-            )
+            logger.info("E-Paper Display Temperature %.2f Celsius", rtc.Read_Temperature())
             return True
         except Exception as e:
-            logger.error(f"Error initializing DS3231: {e}")
+            logger.error("Error initializing DS3231: %s", e)
             return False
 
 
@@ -85,8 +82,8 @@ class NeoDisplay(Display):
             )
             self.strip.begin()
         except Exception as err:
-            logger.error(f"Error connecting to neo-pixels: {err}")
-            exit(1)
+            logger.error("Error connecting to neo-pixels: %s", err)
+            sys.exit(1)
 
     def update(self, hi: int, si: int, values: tuple[int, int]) -> None:
         """Update the display for a given host and sensor.

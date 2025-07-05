@@ -37,7 +37,7 @@ class Connection:
                 timeout=10,
             )
         except OSError as err:
-            logger.error(f"Error connecting to {self.hostname}: {err}")
+            logger.error("Error connecting to %s: %s", self.hostname, err)
             self.client = None
 
     def close(self) -> None:
@@ -73,7 +73,7 @@ class Monitor:
             instance = cls_(*args, **kwargs)
             return instance
         except KeyError:
-            logger.error(f"Monitor class '{class_name_str}' not found.")
+            logger.error("Monitor class '%s' not found.", class_name_str)
             return None
 
     def __init__(self, client: SSHClient, cmd: str, values: list[int]) -> None:
@@ -129,10 +129,10 @@ class CpuTemperature(Monitor):
         try:
             _, stdout, _ = self.client.exec_command(self.cmd)
             temperature = round(int(stdout.read().decode()) / 1000)
-            logger.debug(f"CPU temperature: {temperature}°C")
+            logger.debug("CPU temperature: %d°C", temperature)
             return temperature, Monitor.color_code(temperature, self.values)
         except ValueError as e:
-            logger.error(f"Error reading CPU temperature: {e}")
+            logger.error("Error reading CPU temperature: %s", e)
             return -1, -1
 
 
@@ -147,10 +147,10 @@ class CpuUsage(Monitor):
         try:
             _, stdout, _ = self.client.exec_command(self.cmd)
             usage = round(float(stdout.read().decode()) + 0.5)
-            logger.debug(f"CPU usage: {usage} %")
+            logger.debug("CPU usage: %d %%", usage)
             return usage, Monitor.color_code(usage, self.values)
         except ValueError as e:
-            logger.error(f"Error reading CPU usage: {e}")
+            logger.error("Error reading CPU usage: %s", e)
             return -1, -1
 
 
@@ -168,14 +168,14 @@ class MemoryUsage(Monitor):
             _, stdout, _ = self.client.exec_command(self.cmd)
             texts = stdout.read().decode().split("\n")
             if len(texts) < 3:
-                logger.warning(f"Memory usage information is not available.\n{texts}")
+                logger.warning("Memory usage information is not available.\n%s", texts)
                 return -1, -1
             total, used = int(texts[1].split()[1]), int(texts[1].split()[2])
             usage = round(used * 100 / total)  # Round to nearest integer
-            logger.debug(f"Memory usage: {usage} %")
+            logger.debug("Memory usage: %d %%", usage)
             return usage, Monitor.color_code(usage, self.values)
         except ValueError as e:
-            logger.error(f"Error reading Memory usage: {e}")
+            logger.error("Error reading Memory usage: %s", e)
             return -1, -1
 
 
@@ -197,8 +197,8 @@ class DiskUsage(Monitor):
                 return -1, -1
             # Get the second last value (Used)
             usage = int(texts[1].split()[-2][:-1])
-            logger.debug(f"Disk usage: {usage} %")
+            logger.debug("Disk usage: %d %%", usage)
             return usage, Monitor.color_code(usage, self.values)
         except ValueError as e:
-            logger.error(f"Error reading Disk usage: {e}")
+            logger.error("Error reading Disk usage: %s", e)
             return -1, -1

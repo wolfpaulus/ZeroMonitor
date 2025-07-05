@@ -7,11 +7,12 @@ Author: Wolf Paulus <wolf@paulus.com>
 import subprocess
 from time import sleep, strftime
 from datetime import datetime
+from typing import Any
 
 from PIL.ImageFont import FreeTypeFont
+from PIL import Image, ImageDraw, ImageFont
 
 from display import Display
-from PIL import Image, ImageDraw, ImageFont
 from waveshare.epd2in13_V4 import EPD
 from log import logger
 
@@ -22,7 +23,7 @@ try:
     tiny = ImageFont.truetype("fonts/DejaVuSans.ttf", 12)
     icons = ImageFont.truetype("fonts/materialdesignicons-webfont.ttf", 18)
 except OSError as e:
-    logger.error(f"Error loading fonts: {e}")
+    logger.error("Error loading fonts: %s", e)
 
 
 class InkDisplay(Display):
@@ -33,21 +34,17 @@ class InkDisplay(Display):
         logger.info("init and clear the e-ink display")
         self.active = False
         self.cfg = cfg
-        self.all_hosts = cfg.get("hosts")
-        self.hosts = cfg.get("displays", {}).get("epaper", {}).get("hosts", [])
-        self.timeout = cfg.get("displays", {}).get(
-            "epaper").get("sensor_timeout", 0.5)
-        self.on = datetime.strptime(
-            cfg.get("displays", {}).get("epaper").get("on_"), "%H:%M"
-        ).time()
-        self.off = datetime.strptime(
-            cfg.get("displays", {}).get("epaper").get("off_"), "%H:%M"
-        ).time()
+        self.all_hosts = cfg.get("hosts", [])
+        # self.hosts = cfg.get("displays", {}).get("epaper", {}).get("hosts", [])
+        self.hosts = [host.get("hostname") for host in self.all_hosts[:4]]  # display is limited to 4 hosts
+        self.timeout = cfg.get("displays", {}).get("epaper").get("sensor_timeout", 0.5)
+        self.on = datetime.strptime(cfg.get("displays", {}).get("epaper").get("on_"), "%H:%M").time()
+        self.off = datetime.strptime(cfg.get("displays", {}).get("epaper").get("off_"), "%H:%M").time()
         self.epd = EPD()
         self.image = None
         self.draw = None
         self.counter = 0
-        self.values = [0] * 16
+        self.values: list[Any] = [0] * len(self.hosts) * 4  # 4 sensors per host
         self.init()
 
     def init(self) -> None:
@@ -61,16 +58,10 @@ class InkDisplay(Display):
             self.draw_mixed_font_text((0, 1), self.get_header())
             self.draw.line([(0, 20), (249, 20)], fill=0, width=1)
             self.draw.line([(0, 103), (249, 103)], fill=0, width=1)
-            self.epd.displayPartBaseImage(
-                self.epd.getbuffer(self.image.rotate(180)))
-            # for i in range(len(self.hosts)):
-            #     host = f"{(self.hosts[i])[:10]}"
-            #     y = 22 + 20 * i
-            #     self.draw.text((0, y), host, font=bold, fill=0)
+            self.epd.displayPartBaseImage(self.epd.getbuffer(self.image.rotate(180)))
             for i, host in enumerate(self.hosts):
                 y = 22 + 20 * i
                 self.draw.text((0, y), host[:10], font=bold, fill=0)
-
             self.epd.displayPartial(self.epd.getbuffer(self.image.rotate(180)))
             self.active = True
             sleep(1)
@@ -86,7 +77,7 @@ class InkDisplay(Display):
 
     def update(self, hi: int, si: int, values: tuple[int, int]):
         """Update the display buffer at the specified row and column with the given value.
-        Each time 16 values have been received, the display will partially update.
+        if hi == si == 0, the display will be  redrawn.
         At that time, the footer with time and WiFi quality will be redrawn as well.
         Args:
             hi (int): Host index. 0 .. 7
@@ -97,32 +88,42 @@ class InkDisplay(Display):
         if self.on <= datetime.now().time() < self.off:
             if not self.active:  # if the display is not active, redraw it
                 self.init()
-            hostname = self.all_hosts[hi].get("hostname")
-            if self.all_hosts[hi].get("hostname") in self.hosts:
-                hi = self.hosts.index(hostname)
-                self.counter += 1
-                self.values[si + hi * 4] = values[0] if values[0] >= 0 else ""
-                if self.counter == len(self.values):
-                    self.counter = 0
-                    self.draw.rectangle(
-                        (65, 22, 249, 121), fill=1
-                    )  # clear partial image
-                    for row in range(4):
-                        y = 22 + 20 * row
-                        for col in range(4):
-                            x = 65 + 45 * col
-                            self.draw.text(
-                                (x, y),
-                                f"{self.values[col + row * 4]:4}",
-                                font=small,
-                                fill=0,
-                            )
-                    self.draw.line([(65, 103), (254, 103)], fill=0, width=1)
-                    self.draw_mixed_font_text((65, 105), self.get_footer())
-                    self.epd.displayPartial(
-                        self.epd.getbuffer(self.image.rotate(180)))
         else:
-            self.sleep()
+            if self.active:
+                self.sleep()  # turn off the display
+            return  # no need to update the buffer if the display is off
+
+        if hi == si == 0 and any(self.values):  # find live hosts and update the display
+
+            live_hosts = []
+            for hi, host in enumerate(self.hosts):
+                if any(self.values[hi * 4:hi * 4 + 4]):
+                    live_hosts.append(host)
+            live_hosts = live_hosts[:4]  # limit to 4 hosts for display
+
+            if live_hosts != self.hosts:  # update the display with live hosts
+                logger.info("Updating display with live hosts: %s", live_hosts)
+                self.hosts = live_hosts
+                self.init()  # reinitialize the display with live hosts
+            else:
+                self.draw.rectangle((65, 22, 249, 121), fill=1)  # clear partial image
+
+            for row in range(len(self.hosts)):
+                y = 22 + 20 * row
+                for col in range(4):
+                    x = 65 + 45 * col
+                    self.draw.text(
+                        (x, y),
+                        f"{self.values[col + row * 4]:4}",
+                        font=small,
+                        fill=0,
+                    )
+                self.draw.line([(65, 103), (254, 103)], fill=0, width=1)
+                self.draw_mixed_font_text((65, 105), self.get_footer())
+                self.epd.displayPartial(self.epd.getbuffer(self.image.rotate(180)))
+
+        # put the values into the buffer
+        self.values[si + hi * 4] = values[0] if values[0] >= 0 else ""
 
     def draw_mixed_font_text(
         self, xy: tuple[int, int], text_data: list[tuple[str, FreeTypeFont]], color=0
