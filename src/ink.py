@@ -28,12 +28,14 @@ except OSError as e:
 
 class InkDisplay(Display):
     """Display class for e-ink displays."""
+    rows = 4
+    cols = 4
 
     def __init__(self, cfg: dict):
         """Initialize the e-ink display."""
         logger.info("init and clear the e-ink display")
         self.all_hosts = cfg.get("hosts", [])
-        self.hosts = [host.get("hostname") for host in self.all_hosts[:4]]  # display is limited to 4 hosts
+        self.host_ids = list(range(InkDisplay.rows))  # display is limited to 4 hosts
         self.timeout = cfg.get("displays", {}).get("epaper").get("sensor_timeout", 0.5)
         self.on = datetime.strptime(cfg.get("displays", {}).get("epaper").get("on_"), "%H:%M").time()
         self.off = datetime.strptime(cfg.get("displays", {}).get("epaper").get("off_"), "%H:%M").time()
@@ -42,7 +44,7 @@ class InkDisplay(Display):
         self.image = None
         self.draw = None
         self.counter = 0
-        self.values: list[Any] = [0] * len(self.all_hosts) * 4  # 4 sensors per host
+        self.values: list[Any] = [0] * len(self.all_hosts) * InkDisplay.cols
         self.init()
 
     def init(self) -> None:
@@ -57,9 +59,9 @@ class InkDisplay(Display):
             self.draw.line([(0, 20), (249, 20)], fill=0, width=1)
             self.draw.line([(0, 103), (249, 103)], fill=0, width=1)
             self.epd.displayPartBaseImage(self.epd.getbuffer(self.image.rotate(180)))
-            for i, host in enumerate(self.hosts):
+            for i, hi in enumerate(self.host_ids):
                 y = 22 + 20 * i
-                self.draw.text((0, y), host[:10], font=bold, fill=0)
+                self.draw.text((0, y), self.all_hosts[hi].get("hostname", "")[:10], font=bold, fill=0)
             self.epd.displayPartial(self.epd.getbuffer(self.image.rotate(180)))
             self.active = True
             sleep(1)
@@ -93,26 +95,26 @@ class InkDisplay(Display):
 
         if hi == si == 0 and any(self.values):  # update the display if any values are set
             live_hosts = []
-            for i, host in enumerate(self.hosts):
-                if any(self.values[i * 4:i * 4 + 4]):
-                    live_hosts.append(host.get("hostname"))
-            live_hosts = live_hosts[:4]  # limit to 4 hosts for display
+            for i in range(len(self.all_hosts)):
+                if any(self.values[i * InkDisplay.cols:(i + 1) * InkDisplay.cols]):
+                    live_hosts.append(i)
+            live_hosts = live_hosts[:InkDisplay.rows]  # limit to 4 hosts for display
 
-            if live_hosts != self.hosts:  # update the display with live hosts
+            if live_hosts != self.host_ids:  # update the display with live hosts
                 logger.info("Updating display with live hosts: %s", live_hosts)
-                self.hosts = live_hosts
+                self.host_ids = live_hosts
                 self.active = False  # reset active state to reinitialize the display
                 self.init()  # reinitialize the display with live hosts
             else:
                 self.draw.rectangle((65, 22, 249, 121), fill=1)  # clear partial image
 
-            for row in range(len(self.hosts)):
+            for row, hi in enumerate(self.host_ids):
                 y = 22 + 20 * row
-                for col in range(4):
+                for col in range(InkDisplay.cols):
                     x = 65 + 45 * col
                     self.draw.text(
                         (x, y),
-                        f"{self.values[col + row * 4]:4}",
+                        f"{self.values[col + hi * InkDisplay.cols]:4}",
                         font=small,
                         fill=0,
                     )
