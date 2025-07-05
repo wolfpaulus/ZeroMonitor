@@ -28,17 +28,18 @@ class Connection:
         """Establish the SSH connection"""
         user_config = self.config.lookup(self.hostname)
         key_filename = os.path.expanduser(user_config["identityfile"][0])
-        try:
-            self.client.connect(
-                hostname=user_config["hostname"],
-                username=user_config["user"],
-                port=int(user_config["port"]),
-                key_filename=key_filename,
-                timeout=10,
-            )
-        except OSError as err:
-            logger.error("Error connecting to %s: %s", self.hostname, err)
-            self.client = None
+        if self.client is not None:
+            try:
+                self.client.connect(
+                    hostname=user_config["hostname"],
+                    username=user_config["user"],
+                    port=int(user_config["port"]),
+                    key_filename=key_filename,
+                    timeout=10,
+                )
+            except OSError as err:
+                logger.error("Error connecting to %s: %s", self.hostname, err)
+                self.client = None
 
     def close(self) -> None:
         """Close the SSH connection"""

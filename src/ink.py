@@ -35,7 +35,6 @@ class InkDisplay(Display):
         self.active = False
         self.cfg = cfg
         self.all_hosts = cfg.get("hosts", [])
-        # self.hosts = cfg.get("displays", {}).get("epaper", {}).get("hosts", [])
         self.hosts = [host.get("hostname") for host in self.all_hosts[:4]]  # display is limited to 4 hosts
         self.timeout = cfg.get("displays", {}).get("epaper").get("sensor_timeout", 0.5)
         self.on = datetime.strptime(cfg.get("displays", {}).get("epaper").get("on_"), "%H:%M").time()
@@ -96,14 +95,15 @@ class InkDisplay(Display):
         if hi == si == 0 and any(self.values):  # find live hosts and update the display
 
             live_hosts = []
-            for hi, host in enumerate(self.hosts):
-                if any(self.values[hi * 4:hi * 4 + 4]):
-                    live_hosts.append(host)
+            for i, host in enumerate(self.hosts):
+                if any(self.values[i * 4:i * 4 + 4]):
+                    live_hosts.append(host.get("hostname"))
             live_hosts = live_hosts[:4]  # limit to 4 hosts for display
 
             if live_hosts != self.hosts:  # update the display with live hosts
                 logger.info("Updating display with live hosts: %s", live_hosts)
                 self.hosts = live_hosts
+                self.active = False  # reset active state to reinitialize the display
                 self.init()  # reinitialize the display with live hosts
             else:
                 self.draw.rectangle((65, 22, 249, 121), fill=1)  # clear partial image

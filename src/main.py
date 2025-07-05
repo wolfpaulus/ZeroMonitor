@@ -37,8 +37,9 @@ if __name__ == "__main__":
                         else:
                             logger.error("Sensor %s not found. Skipping sensor probe for this host.", class_)
                             display.update(hi, si, (-1, -1))
-            except Exception as err:
-                logger.warning("%s seems to be offline. Skipping sensor probe(s) for this host.", host.get("hostname"))
+            except (OSError, ConnectionError) as err:
+                logger.warning("%s seems to be offline. Skipping sensor probe(s) for this host. Error: %s",
+                               host.get("hostname"), err)
                 for si, sensor in enumerate(config.get("sensors").values()):
                     display.update(hi, si, (-1, -1))
             sleep(config.get("host_timeout", 0.5))
