@@ -32,18 +32,17 @@ class InkDisplay(Display):
     def __init__(self, cfg: dict):
         """Initialize the e-ink display."""
         logger.info("init and clear the e-ink display")
-        self.active = False
-        self.cfg = cfg
         self.all_hosts = cfg.get("hosts", [])
         self.hosts = [host.get("hostname") for host in self.all_hosts[:4]]  # display is limited to 4 hosts
         self.timeout = cfg.get("displays", {}).get("epaper").get("sensor_timeout", 0.5)
         self.on = datetime.strptime(cfg.get("displays", {}).get("epaper").get("on_"), "%H:%M").time()
         self.off = datetime.strptime(cfg.get("displays", {}).get("epaper").get("off_"), "%H:%M").time()
         self.epd = EPD()
+        self.active = False
         self.image = None
         self.draw = None
         self.counter = 0
-        self.values: list[Any] = [0] * len(self.hosts) * 4  # 4 sensors per host
+        self.values: list[Any] = [0] * len(self.all_hosts) * 4  # 4 sensors per host
         self.init()
 
     def init(self) -> None:
@@ -52,7 +51,7 @@ class InkDisplay(Display):
             self.epd.init()
             self.epd.Clear()
             logger.info("Creating a white image, matching the display size...")
-            self.image = Image.new("1", (self.epd.height, self.epd.width), 1)
+            self.image = Image.new("1", (self.epd.height, self.epd.width), 1)  # "1" for 1-bit pixels, black and white"
             self.draw = ImageDraw.Draw(self.image)
             self.draw_mixed_font_text((0, 1), self.get_header())
             self.draw.line([(0, 20), (249, 20)], fill=0, width=1)
@@ -76,10 +75,10 @@ class InkDisplay(Display):
 
     def update(self, hi: int, si: int, values: tuple[int, int]):
         """Update the display buffer at the specified row and column with the given value.
-        if hi == si == 0, the display will be  redrawn.
+        if hi == si == 0, the display will be redrawn.
         At that time, the footer with time and WiFi quality will be redrawn as well.
         Args:
-            hi (int): Host index. 0 .. 7
+            hi (int): Host index. 0 .. len(all_hosts) - 1
             si (int): Sensor index. 0 .. 3
             values (tuple[int, int]): Values to display, e.g., (value, color_code).
         """
@@ -92,8 +91,7 @@ class InkDisplay(Display):
                 self.sleep()  # turn off the display
             return  # no need to update the buffer if the display is off
 
-        if hi == si == 0 and any(self.values):  # find live hosts and update the display
-
+        if hi == si == 0 and any(self.values):  # update the display if any values are set
             live_hosts = []
             for i, host in enumerate(self.hosts):
                 if any(self.values[i * 4:i * 4 + 4]):
