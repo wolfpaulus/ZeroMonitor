@@ -145,14 +145,15 @@ class CpuUsage(Monitor):
 
     def probe(self) -> tuple[int, int]:
         """Probe the CPU Usage in percent"""
-        try:
-            _, stdout, _ = self.client.exec_command(self.cmd)
-            usage = round(float(stdout.read().decode()) + 0.5)
-            logger.debug("CPU usage: %d %%", usage)
-            return usage, Monitor.color_code(usage, self.values)
-        except ValueError as e:
-            logger.error("Error reading CPU usage: %s", e)
-            return -1, -1
+        if self.client is not None:
+            try:
+                _, stdout, _ = self.client.exec_command(self.cmd)
+                usage = round(float(stdout.read().decode()) + 0.5)
+                logger.debug("CPU usage: %d %%", usage)
+                return usage, Monitor.color_code(usage, self.values)
+            except ValueError as e:
+                logger.error("Error reading CPU usage: %s", e)
+        return -1, -1
 
 
 class MemoryUsage(Monitor):

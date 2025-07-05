@@ -125,16 +125,12 @@ class InkDisplay(Display):
         # put the values into the buffer
         self.values[si + hi * 4] = values[0] if values[0] >= 0 else ""
 
-    def draw_mixed_font_text(
-        self, xy: tuple[int, int], text_data: list[tuple[str, FreeTypeFont]], color=0
-    ):
+    def draw_mixed_font_text(self, xy: tuple[int, int], text_data: list[tuple[str, FreeTypeFont]], color=0):
         """Draws text with mixed fonts and styles."""
         current_x, current_y = xy
         for text, font in text_data:
             self.draw.text((current_x, current_y), text, fill=color, font=font)
-            text_width = self.draw.textbbox((current_x, current_y), text, font=font)[
-                2
-            ]  # Calculate text width
+            text_width = self.draw.textbbox((current_x, current_y), text, font=font)[2]  # Calculate text width
             current_x = text_width  # Update starting X position
 
     @staticmethod
@@ -184,7 +180,7 @@ class InkDisplay(Display):
                         wifi_data = line.split("Link Quality=")[
                             1].split(" ")[0]
             else:
-                logger.error(f"Error: {error.decode('utf-8')}")
-        except Exception as err:
-            logger.error(f"Failed to get WiFi quality: {err}")
+                logger.error("Error: %s", error.decode('utf-8'))
+        except (OSError, subprocess.SubprocessError) as err:
+            logger.error("Failed to get WiFi quality: %s", err)
         return wifi_data
