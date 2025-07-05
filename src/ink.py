@@ -27,7 +27,7 @@ except OSError as e:
 
 
 class InkDisplay(Display):
-    """Display class for e-ink displays."""
+    """Display class for e-ink displays. 250 * 122 """
     rows = 4
     cols = 4
 
@@ -51,7 +51,7 @@ class InkDisplay(Display):
         """Initialize the e-ink display and prepare for partial updates."""
         if not self.active:
             self.epd.init()
-            self.epd.Clear()
+            self.epd.Clear(0xFF)
             logger.info("Creating a white image, matching the display size...")
             self.image = Image.new("1", (self.epd.height, self.epd.width), 1)  # "1" for 1-bit pixels, black and white"
             self.draw = ImageDraw.Draw(self.image)
@@ -118,12 +118,12 @@ class InkDisplay(Display):
                         font=small,
                         fill=0,
                     )
-                self.draw.line([(65, 103), (254, 103)], fill=0, width=1)
+                self.draw.line([(65, 103), (249, 103)], fill=0, width=1)
                 self.draw_mixed_font_text((65, 105), self.get_footer())
                 self.epd.displayPartial(self.epd.getbuffer(self.image.rotate(180)))
 
         # put the values into the buffer
-        self.values[si + hi * 4] = values[0] if values[0] >= 0 else ""
+        self.values[si + hi * InkDisplay.cols] = values[0] if values[0] >= 0 else ""
 
     def draw_mixed_font_text(self, xy: tuple[int, int], text_data: list[tuple[str, FreeTypeFont]], color=0):
         """Draws text with mixed fonts and styles."""
