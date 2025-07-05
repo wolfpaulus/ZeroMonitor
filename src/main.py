@@ -28,18 +28,23 @@ if __name__ == "__main__":
             hostname = host.get("hostname")
             try:
                 with Connection(hostname) as conn:
-                    for si, sensor in enumerate(config.get("sensors").values()):  # iterate over sensors
-                        class_ = sensor.get("name")
-                        sensor = ChainMap(host.get(class_, {}), sensor)
-                        instance = Monitor.create_instance(class_, conn, sensor.get("cmd"), sensor.get("values"))
-                        if instance is not None:
-                            display.update(hi, si, instance.probe())
-                        else:
-                            logger.error("Sensor %s not found. Skipping sensor probe for this host.", class_)
+                    if conn is not None:
+                        for si, sensor in enumerate(config.get("sensors").values()):  # iterate over sensors
+                            class_ = sensor.get("name")
+                            sensor = ChainMap(host.get(class_, {}), sensor)
+                            instance = Monitor.create_instance(class_, conn, sensor.get("cmd"), sensor.get("values"))
+                            if instance is not None:
+                                display.update(hi, si, instance.probe())
+                            else:
+                                logger.error("Sensor %s not found. Skipping sensor probe for this host.", class_)
+                                display.update(hi, si, (-1, -1))
+                    else:
+                        logger.error("Connection to %s failed. Skipping sensor probe(s) for this host.", hostname)
+                        for si, sensor in enumerate(config.get("sensors").values()):
                             display.update(hi, si, (-1, -1))
+
             except (OSError, ConnectionError) as err:
-                logger.warning("%s seems to be offline. Skipping sensor probe(s) for this host. Error: %s",
-                               host.get("hostname"), err)
+                logger.error("%s : %s", host.get("hostname"), err)
                 for si, sensor in enumerate(config.get("sensors").values()):
                     display.update(hi, si, (-1, -1))
             sleep(config.get("host_timeout", 0.5))

@@ -88,7 +88,7 @@ class Monitor:
         self.values = values
 
     @abstractmethod
-    def probe(self) -> tuple[int, int]:
+    def probe(self) -> tuple[int, int] | None:
         """Probe the system for information
         Returns: tuple of (measured value, color_code based on thresholds)"""
         raise NotImplementedError(
@@ -125,16 +125,17 @@ class CpuTemperature(Monitor):
     53692
     """
 
-    def probe(self) -> tuple[int, int]:
+    def probe(self) -> tuple[int, int] | None:
         """Probe the CPU temperature in Celsius"""
-        try:
-            _, stdout, _ = self.client.exec_command(self.cmd)
-            temperature = round(int(stdout.read().decode()) / 1000)
-            logger.debug("CPU temperature: %d°C", temperature)
-            return temperature, Monitor.color_code(temperature, self.values)
-        except ValueError as e:
-            logger.error("Error reading CPU temperature: %s", e)
-            return -1, -1
+        if self.client is not None:
+            try:
+                _, stdout, _ = self.client.exec_command(self.cmd)
+                temperature = round(int(stdout.read().decode()) / 1000)
+                logger.debug("CPU temperature: %d°C", temperature)
+                return temperature, Monitor.color_code(temperature, self.values)
+            except ValueError as e:
+                logger.error("Error reading CPU temperature: %s", e)
+                return -1, -1
 
 
 class CpuUsage(Monitor):
@@ -143,7 +144,7 @@ class CpuUsage(Monitor):
     2.78
     """
 
-    def probe(self) -> tuple[int, int]:
+    def probe(self) -> tuple[int, int] | None:
         """Probe the CPU Usage in percent"""
         if self.client is not None:
             try:
@@ -164,21 +165,22 @@ class MemoryUsage(Monitor):
     Swap:              0           0           0
     """
 
-    def probe(self) -> tuple[int, int]:
+    def probe(self) -> tuple[int, int] | None:
         """Probe the Memory"""
-        try:
-            _, stdout, _ = self.client.exec_command(self.cmd)
-            texts = stdout.read().decode().split("\n")
-            if len(texts) < 3:
-                logger.warning("Memory usage information is not available.\n%s", texts)
+        if self.client is not None:
+            try:
+                _, stdout, _ = self.client.exec_command(self.cmd)
+                texts = stdout.read().decode().split("\n")
+                if len(texts) < 3:
+                    logger.warning("Memory usage information is not available.\n%s", texts)
+                    return -1, -1
+                total, used = int(texts[1].split()[1]), int(texts[1].split()[2])
+                usage = round(used * 100 / total)  # Round to nearest integer
+                logger.debug("Memory usage: %d %%", usage)
+                return usage, Monitor.color_code(usage, self.values)
+            except ValueError as e:
+                logger.error("Error reading Memory usage: %s", e)
                 return -1, -1
-            total, used = int(texts[1].split()[1]), int(texts[1].split()[2])
-            usage = round(used * 100 / total)  # Round to nearest integer
-            logger.debug("Memory usage: %d %%", usage)
-            return usage, Monitor.color_code(usage, self.values)
-        except ValueError as e:
-            logger.error("Error reading Memory usage: %s", e)
-            return -1, -1
 
 
 class DiskUsage(Monitor):
@@ -188,19 +190,20 @@ class DiskUsage(Monitor):
     /dev/mmcblk0p2  14719576 3318572  10753180  24% /
     """
 
-    def probe(self) -> tuple[int, int]:
+    def probe(self) -> tuple[int, int] | None:
         """Probe the Disk usage"""
-        try:
-            _, stdout, _ = self.client.exec_command(self.cmd)
-            texts = stdout.read().decode().split("\n")
-            if len(texts) < 2:
-                logger.warning(
-                    "Disk usage information is not available.\n{texts}")
+        if self.client is not None:
+            try:
+                _, stdout, _ = self.client.exec_command(self.cmd)
+                texts = stdout.read().decode().split("\n")
+                if len(texts) < 2:
+                    logger.warning(
+                        "Disk usage information is not available.\n{texts}")
+                    return -1, -1
+                # Get the second last value (Used)
+                usage = int(texts[1].split()[-2][:-1])
+                logger.debug("Disk usage: %d %%", usage)
+                return usage, Monitor.color_code(usage, self.values)
+            except ValueError as e:
+                logger.error("Error reading Disk usage: %s", e)
                 return -1, -1
-            # Get the second last value (Used)
-            usage = int(texts[1].split()[-2][:-1])
-            logger.debug("Disk usage: %d %%", usage)
-            return usage, Monitor.color_code(usage, self.values)
-        except ValueError as e:
-            logger.error("Error reading Disk usage: %s", e)
-            return -1, -1
