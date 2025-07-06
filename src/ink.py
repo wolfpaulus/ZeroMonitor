@@ -63,8 +63,7 @@ class InkDisplay(Display):
             for i, hi in enumerate(self.host_ids):
                 y = 22 + 20 * i
                 self.draw.text((0, y), self.all_hosts[hi].get("hostname", "")[:10], font=bold, fill=0)
-            # self.epd.displayPartial(self.epd.getbuffer(self.image.rotate(180)))
-            self.epd.displayPartial(self.epd.getbuffer(self.image))
+            self.epd.displayPartial(self.epd.getbuffer(self.image.rotate(90)))
 
             self.active = True
             sleep(1)
@@ -123,7 +122,7 @@ class InkDisplay(Display):
                     )
                 self.draw.line([(65, 103), (249, 103)], fill=0, width=1)
                 self.draw_mixed_font_text((65, 105), self.get_footer())
-                self.epd.displayPartial(self.epd.getbuffer(self.image.rotate(180)))
+                self.epd.displayPartial(self.epd.getbuffer(self.image.rotate(90)))
 
         # put the values into the buffer
         self.values[si + hi * InkDisplay.cols] = values[0] if values[0] >= 0 else ""
