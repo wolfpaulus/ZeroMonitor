@@ -53,7 +53,9 @@ class InkDisplay(Display):
             self.epd.init()
             self.epd.Clear(0xFF)
             logger.info("Creating a white image, matching the display size...")
-            self.image = Image.new("1", (self.epd.height, self.epd.width), 1)  # "1" for 1-bit pixels, black and white"
+            # self.image = Image.new("1", (self.epd.height, self.epd.width), 1)  # "1" for 1-bit pixels, black and white"
+            self.image = Image.new("1", (self.epd.width, self.epd.height), 1)  # "1" for 1-bit pixels, black and white"
+
             self.draw = ImageDraw.Draw(self.image)
             self.draw_mixed_font_text((0, 1), self.get_header())
             self.draw.line([(0, 20), (249, 20)], fill=0, width=1)
