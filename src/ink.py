@@ -53,20 +53,15 @@ class InkDisplay(Display):
             self.epd.init()
             self.epd.Clear(0xFF)
             logger.info("Creating a white image, matching the display size...")
-            # self.image = Image.new("1", (self.epd.height, self.epd.width), 1)  # "1" for 1-bit pixels, black and white"
-            self.image = Image.new("1", (self.epd.width, self.epd.height), 1)  # "1" for 1-bit pixels, black and white"
+            self.image = Image.new("1", (self.epd.height, self.epd.width), 1)  # "1" for 1-bit pixels, black and white"
             self.draw = ImageDraw.Draw(self.image)
             self.draw_mixed_font_text((0, 1), self.get_header())
             self.draw.line([(0, 20), (249, 20)], fill=0, width=1)
             for i, hi in enumerate(self.host_ids):
                 y = 22 + 20 * i
-                self.draw.text((0, y), self.all_hosts[hi].get("hostname", "")[:10], font=bold, fill=0)
+                self.draw.text((2, y), self.all_hosts[hi].get("hostname", "")[:10], font=bold, fill=0)
             self.draw.line([(0, 103), (249, 103)], fill=0, width=1)
-
-            self.epd.displayPartBaseImage(self.epd.getbuffer(self.image.rotate(90)))
-
-            self.epd.displayPartial(self.epd.getbuffer(self.image.rotate(90)))
-
+            self.epd.displayPartBaseImage(self.epd.getbuffer(self.image.rotate(180)))
             self.active = True
             sleep(1)
 
@@ -109,8 +104,8 @@ class InkDisplay(Display):
                 self.host_ids = live_hosts
                 self.active = False  # reset active state to reinitialize the display
                 self.init()  # reinitialize the display with live hosts
-            else:
-                self.draw.rectangle((65, 22, 249, 121), fill=1)  # clear partial image
+
+            self.draw.rectangle((65, 22, 249, 121), fill=255)  # clear partial image
 
             for row, hi in enumerate(self.host_ids):
                 y = 22 + 20 * row
@@ -124,7 +119,7 @@ class InkDisplay(Display):
                     )
                 self.draw.line([(65, 103), (249, 103)], fill=0, width=1)
                 self.draw_mixed_font_text((65, 105), self.get_footer())
-                self.epd.displayPartial(self.epd.getbuffer(self.image.rotate(90)))
+                self.epd.displayPartial(self.epd.getbuffer(self.image.rotate(180)))
 
         # put the values into the buffer
         self.values[si + hi * InkDisplay.cols] = values[0] if values[0] >= 0 else ""
