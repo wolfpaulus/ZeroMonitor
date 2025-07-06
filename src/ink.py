@@ -55,7 +55,6 @@ class InkDisplay(Display):
             logger.info("Creating a white image, matching the display size...")
             # self.image = Image.new("1", (self.epd.height, self.epd.width), 1)  # "1" for 1-bit pixels, black and white"
             self.image = Image.new("1", (self.epd.width, self.epd.height), 1)  # "1" for 1-bit pixels, black and white"
-
             self.draw = ImageDraw.Draw(self.image)
             self.draw_mixed_font_text((0, 1), self.get_header())
             self.draw.line([(0, 20), (249, 20)], fill=0, width=1)
@@ -64,7 +63,9 @@ class InkDisplay(Display):
             for i, hi in enumerate(self.host_ids):
                 y = 22 + 20 * i
                 self.draw.text((0, y), self.all_hosts[hi].get("hostname", "")[:10], font=bold, fill=0)
-            self.epd.displayPartial(self.epd.getbuffer(self.image.rotate(180)))
+            # self.epd.displayPartial(self.epd.getbuffer(self.image.rotate(180)))
+            self.epd.displayPartial(self.epd.getbuffer(self.image))
+
             self.active = True
             sleep(1)
 
