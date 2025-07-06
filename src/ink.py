@@ -58,11 +58,13 @@ class InkDisplay(Display):
             self.draw = ImageDraw.Draw(self.image)
             self.draw_mixed_font_text((0, 1), self.get_header())
             self.draw.line([(0, 20), (249, 20)], fill=0, width=1)
-            self.draw.line([(0, 103), (249, 103)], fill=0, width=1)
-            self.epd.displayPartBaseImage(self.epd.getbuffer(self.image.rotate(180)))
             for i, hi in enumerate(self.host_ids):
                 y = 22 + 20 * i
                 self.draw.text((0, y), self.all_hosts[hi].get("hostname", "")[:10], font=bold, fill=0)
+            self.draw.line([(0, 103), (249, 103)], fill=0, width=1)
+
+            self.epd.displayPartBaseImage(self.epd.getbuffer(self.image.rotate(90)))
+
             self.epd.displayPartial(self.epd.getbuffer(self.image.rotate(90)))
 
             self.active = True
@@ -160,10 +162,7 @@ class InkDisplay(Display):
             ("󰅐", icons),
             (f" {strftime('%H:%M:%S')}   ", tiny),
             ("󰖩", icons),
-            (
-                f" {InkDisplay.get_wifi_quality()}",
-                tiny,
-            ),  # iwconfig wlan0 | grep Quality
+            (f" {InkDisplay.get_wifi_quality()}", tiny),  # iwconfig wlan0 | grep Quality
         ]
 
     @staticmethod
