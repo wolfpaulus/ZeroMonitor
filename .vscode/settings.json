@@ -10,6 +10,7 @@
   "python.analysis.typeCheckingMode": "standard",
   "python.analysis.extraPaths": ["./src"],
   "[python]": {
+    "editor.fontSize": 15,
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "ms-python.autopep8"
   },
