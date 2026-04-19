@@ -73,5 +73,5 @@ hosts: # List of hosts to monitor
     CpuTemperature:
       cmd: cat /sys/class/hwmon/hwmon0/device/temp2_input
 
-  - hostname: epsilon # Raspberry Zero 2
+  - hostname: orion # Raspberry Zero 2
     details: RPi Zero 2 512 MB RAM

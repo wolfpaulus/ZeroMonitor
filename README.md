@@ -60,23 +60,24 @@ Updates the corresponding NeoPixel LED.
 
 
 ## ⚙️ Configuration
-### create a `~/.ssh/authorized_keys` file on each monitored hosts
-To allow the Pi to ssh into the monitored hosts, you need to set up SSH key-based authentication. This involves [generating an SSH key pair](https://www.ssh.com/academy/ssh/keygen) on the Pi and adding the public key to the `~/.ssh/authorized_keys` file on each monitored host. This way, the Pi can connect securely without needing passwords.
+### create a `/home/zero/.ssh/authorized_keys` file on each monitored hosts
+For the Pi to ssh into the monitored hosts, SSH key-based authentication is required. This involves [generating an SSH key pair](https://www.ssh.com/academy/ssh/keygen) on the Pi, creating a `zero` user, and adding the public key to the `/home/zero/.ssh/authorized_keys` file on each monitored host. This way, the Pi can connect securely without needing passwords.
 __That should be the only setup required on the monitored hosts — no additional software or agents are needed, making it a non-invasive monitoring solution.__
 
-### create a `~/.ssh/config` file on the Pi Zero
-To simplify SSH connections, you can set up a `~/.ssh/config` file on the Pi something like this, which allows you to use simple hostnames (e.g. `ssh alpha`) instead of full IP addresses and options every time. No usernames, ports, or identity files need to be specified in the code — just the hosts like `alpha` and `beta` defined in the SSH config.
+### create a `/root/.ssh/config` file on the Pi Zero
+Since the monitoring script will be running as root (to access the GPIO pins for the NeoPixels) and because it's lauche as a cron job, you need to set up the SSH config for the root user on the Pi. This involves creating a `/root/.ssh/config` file that defines the hosts you want to monitor, along with their IP addresses, usernames, and SSH key paths. This allows the monitoring script to easily connect to the hosts using simple hostnames defined in the SSH config.
+To simplify SSH connections, you can set up the `/root/.ssh/config` like shown below, which allows you to use simple hostnames (e.g. `ssh alpha`) instead of full IP addresses and options every time. No usernames, ports, or identity files need to be specified in the code — just the hosts like `alpha` and `beta` defined in the SSH config.
 
 #### Example SSH Config
 ```plaintext
 Host alpha
-    User wolf
+    User zero
     Port 22
     HostName 192.168.200.16
     IdentityFile ~/.ssh/id_rsa
 
 Host beta
-    User wolf
+    User zero
     Port 22
     HostName 192.168.200.17
     IdentityFile ~/.ssh/id_rsa

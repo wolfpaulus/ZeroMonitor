@@ -6,7 +6,7 @@ import sys
 from abc import ABC, abstractmethod
 from time import sleep
 from datetime import datetime
-from rpi_ws281x import PixelStrip, Color
+from rpi_ws281x import PixelStrip, Color  # type: ignore
 from log import logger
 
 

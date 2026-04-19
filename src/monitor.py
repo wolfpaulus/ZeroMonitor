@@ -37,7 +37,7 @@ class Connection:
                     key_filename=key_filename,
                     timeout=10,
                 )
-            except OSError as err:
+            except Exception as err:
                 logger.error("Error connecting to %s: %s", self.hostname, err)
                 self.client = None
 
@@ -220,7 +220,11 @@ class StreamlitSessions(Monitor):
         if self.client is not None:
             try:
                 _, stdout, _ = self.client.exec_command(self.cmd)
-                sessions = round(int(stdout.read().decode()))
+                value = stdout.read().decode().strip()
+                if not value.isdigit():
+                    logger.info(f"{self.client.} Streamlit sessions information is not available or not a number: {value}")
+                    return -1, -1
+                sessions = round(int(value))
                 logger.debug("Streamlit sessions: %d", sessions)
                 return sessions, Monitor.color_code(sessions, self.values)
             except ValueError as e:
