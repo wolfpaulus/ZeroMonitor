@@ -50,21 +50,24 @@ sensors: # All sensors to monitor
       - 5
 
 hosts: # List of hosts to monitor
-  - hostname: alpha # Intel NUC Core i5
-    details: NUC CoreI5 16GB 256GB SSD
-    CpuTemperature:
-      cmd: cat /sys/class/thermal/thermal_zone2/temp # CPU package temperature
+  - hostname: orion # Raspberry Zero 2
+    details: RPi Zero 2 512 MB RAM
+
+  - hostname: ares # Raspberry Pi 5
+    details: RPi5 16GB 500GB SSD
+
+  - hostname: artemis # Raspberry Pi 5
+    details: RPi5 16GB 500GB SSD
 
   - hostname: beta # Intel NUC Core i3
     details: NUC CoreI3 16GB 128GB SSD
     CpuTemperature:
       cmd: cat /sys/class/thermal/thermal_zone2/temp # CPU package temperature
 
-  - hostname: area # Raspberry Pi 5
-    details: RPi5 16GB 500GB SSD
-
-  - hostname: artemis # Raspberry Pi 5
-    details: RPi5 16GB 500GB SSD
+  - hostname: alpha # Intel NUC Core i5
+    details: NUC CoreI5 16GB 256GB SSD
+    CpuTemperature:
+      cmd: cat /sys/class/thermal/thermal_zone2/temp # CPU package temperature
 
   - hostname: omega # INTEL Atom C2538 16 GB (req. # synogear install)
     details: DS 1517+
@@ -73,5 +76,4 @@ hosts: # List of hosts to monitor
     CpuTemperature:
       cmd: cat /sys/class/hwmon/hwmon0/device/temp2_input
 
-  - hostname: orion # Raspberry Zero 2
-    details: RPi Zero 2 512 MB RAM
+
