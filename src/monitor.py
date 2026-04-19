@@ -4,7 +4,7 @@ Author: Wolf Paulus <wolf@paulus.com>
 """
 
 import os
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from paramiko import SSHClient, AutoAddPolicy, SSHConfig
 from log import logger
 
@@ -27,7 +27,8 @@ class Connection:
     def connect(self) -> None:
         """Establish the SSH connection"""
         user_config = self.config.lookup(self.hostname)
-        key_filename = os.path.expanduser(user_config["identityfile"][0])
+        key_filename = os.path.expanduser(user_config["identityfile"][0]).strip(
+            '"') if "identityfile" in user_config else None
         if self.client is not None:
             try:
                 self.client.connect(
@@ -55,7 +56,7 @@ class Connection:
         self.close()
 
 
-class Monitor:
+class Monitor(ABC):
     """Base class for SSH connection monitoring"""
 
     @classmethod
@@ -81,21 +82,21 @@ class Monitor:
         """Initialize the Monitor class with a hostname
         client, ssh client object
         cmd, command to execute on the remote host
-        values, list of tree values: eg. low, medium, high
+        values, list of three values: eg. low, medium, high
         """
         self.client = client
         self.cmd = cmd
         self.values = values
 
     @abstractmethod
-    def probe(self) -> tuple[int, int] | None:
+    def probe(self) -> tuple[int, int]:
         """Probe the system for information
         Returns: tuple of (measured value, color_code based on thresholds)"""
         raise NotImplementedError(
             "Subclasses must implement the probe method.")
 
     @staticmethod
-    def color_code(v: int | int, values: list[int]) -> int:
+    def color_code(v: float, values: list[int]) -> int:
         """Match the value with the corresponding color index
         Args: v: the value to match
             values: list of threshold values
@@ -125,7 +126,7 @@ class CpuTemperature(Monitor):
     53692
     """
 
-    def probe(self) -> tuple[int, int] | None:
+    def probe(self) -> tuple[int, int]:
         """Probe the CPU temperature in Celsius"""
         if self.client is not None:
             try:
@@ -135,7 +136,7 @@ class CpuTemperature(Monitor):
                 return temperature, Monitor.color_code(temperature, self.values)
             except ValueError as e:
                 logger.error("Error reading CPU temperature: %s", e)
-                return -1, -1
+        return -1, -1
 
 
 class CpuUsage(Monitor):
@@ -144,12 +145,12 @@ class CpuUsage(Monitor):
     2.78
     """
 
-    def probe(self) -> tuple[int, int] | None:
+    def probe(self) -> tuple[int, int]:
         """Probe the CPU Usage in percent"""
         if self.client is not None:
             try:
                 _, stdout, _ = self.client.exec_command(self.cmd)
-                usage = round(float(stdout.read().decode()) + 0.5)
+                usage = round(float(stdout.read().decode()))
                 logger.debug("CPU usage: %d %%", usage)
                 return usage, Monitor.color_code(usage, self.values)
             except ValueError as e:
@@ -165,7 +166,7 @@ class MemoryUsage(Monitor):
     Swap:              0           0           0
     """
 
-    def probe(self) -> tuple[int, int] | None:
+    def probe(self) -> tuple[int, int]:
         """Probe the Memory"""
         if self.client is not None:
             try:
@@ -180,7 +181,7 @@ class MemoryUsage(Monitor):
                 return usage, Monitor.color_code(usage, self.values)
             except ValueError as e:
                 logger.error("Error reading Memory usage: %s", e)
-                return -1, -1
+        return -1, -1
 
 
 class DiskUsage(Monitor):
@@ -190,7 +191,7 @@ class DiskUsage(Monitor):
     /dev/mmcblk0p2  14719576 3318572  10753180  24% /
     """
 
-    def probe(self) -> tuple[int, int] | None:
+    def probe(self) -> tuple[int, int]:
         """Probe the Disk usage"""
         if self.client is not None:
             try:
@@ -198,7 +199,7 @@ class DiskUsage(Monitor):
                 texts = stdout.read().decode().split("\n")
                 if len(texts) < 2:
                     logger.warning(
-                        "Disk usage information is not available.\n{texts}")
+                        "Disk usage information is not available.\n%s", texts)
                     return -1, -1
                 # Get the second last value (Used)
                 usage = int(texts[1].split()[-2][:-1])
@@ -206,7 +207,7 @@ class DiskUsage(Monitor):
                 return usage, Monitor.color_code(usage, self.values)
             except ValueError as e:
                 logger.error("Error reading Disk usage: %s", e)
-                return -1, -1
+        return -1, -1
 
 
 class StreamlitSessions(Monitor):
@@ -215,7 +216,7 @@ class StreamlitSessions(Monitor):
     3
     """
 
-    def probe(self) -> tuple[int, int] | None:
+    def probe(self) -> tuple[int, int]:
         """Probe the number of Streamlit sessions"""
         if self.client is not None:
             try:
@@ -223,11 +224,11 @@ class StreamlitSessions(Monitor):
                 value = stdout.read().decode().strip()
                 if not value.isdigit():
                     logger.info(
-                        f"{self.client} Streamlit sessions information is not available or not a number: {value}")
+                        "Streamlit sessions information is not available or not a number: %s", value)
                     return -1, -1
-                sessions = round(int(value))
+                sessions = int(value)
                 logger.debug("Streamlit sessions: %d", sessions)
                 return sessions, Monitor.color_code(sessions, self.values)
             except ValueError as e:
                 logger.error("Error reading Streamlit sessions: %s", e)
-                return -1, -1
+        return -1, -1

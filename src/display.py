@@ -36,30 +36,27 @@ class NeoDisplay(Display):
     """
 
     ROWS, COLS = 4, 8
+    COLOR_OFF = Color(0, 0, 0)
     COLORS = [
-        Color(0, 0, 31),
-        Color(0, 15, 15),
-        Color(0, 31, 0),
-        Color(15, 15, 0),
-        Color(31, 0, 0),
-        Color(31, 0, 31),
-        Color(0, 0, 0),
+        Color(0, 0, 31),    # 0: blue    — low/idle
+        Color(0, 15, 15),   # 1: cyan    — below normal
+        Color(0, 31, 0),    # 2: green   — normal
+        Color(15, 15, 0),   # 3: yellow  — above normal
+        Color(31, 0, 0),    # 4: red     — high
+        Color(31, 0, 31),   # 5: pink    — critical
     ]
 
     def __init__(self, cfg: dict):
         try:
+            neo_cfg = cfg.get("displays", {}).get("neopixel", {})
             self.on = datetime.strptime(
-                cfg.get("displays", {}).get("neopixel").get("on_"), "%H:%M"
+                neo_cfg.get("on_"), "%H:%M"
             ).time()
             self.off = datetime.strptime(
-                cfg.get("displays", {}).get("neopixel").get("off_"), "%H:%M"
+                neo_cfg.get("off_"), "%H:%M"
             ).time()
-            self.timeout = (
-                cfg.get("displays", {}).get(
-                    "neopixel").get("sensor_timeout", 0.5)
-            )
-            self.brightness = cfg.get("displays", {}).get(
-                "neopixel").get("brightness", 63)
+            self.timeout = neo_cfg.get("sensor_timeout", 0.5)
+            self.brightness = neo_cfg.get("brightness", 63)
             self.strip = PixelStrip(
                 num=32,
                 pin=18,
@@ -82,7 +79,7 @@ class NeoDisplay(Display):
             values (tuple[int,int]): Values to display, e.g., (value, color_code).
         """
         sleep(self.timeout)
-        if self.on <= datetime.now().time() < self.off:
+        if self._is_active():
             self.strip.setBrightness(self.brightness)
             index = (
                 NeoDisplay.COLS * NeoDisplay.ROWS - 1 - hi - si * NeoDisplay.COLS
@@ -90,10 +87,22 @@ class NeoDisplay(Display):
             # hi = 0, si = 3 -> 31 - 0 - 3 * 8 = 7
             # hi = 3, si = 0 -> 31 - 3 - 0 * 8 = 28
             # hi = 7, si = 3 -> 31 - 7 - 3 * 8 = 0
-            self.strip.setPixelColor(index, NeoDisplay.COLORS[-1])
+            self.strip.setPixelColor(index, NeoDisplay.COLOR_OFF)
             self.strip.show()
             sleep(0.25)
-            self.strip.setPixelColor(index, NeoDisplay.COLORS[values[1]])
+            color_idx = values[1]
+            color = NeoDisplay.COLORS[color_idx] if 0 <= color_idx < len(NeoDisplay.COLORS) else NeoDisplay.COLOR_OFF
+            self.strip.setPixelColor(index, color)
         else:
             self.strip.setBrightness(0)
         self.strip.show()
+
+    def _is_active(self) -> bool:
+        """Check if LEDs should be on based on the configured schedule.
+        Supports both daytime (on < off) and overnight (on > off) schedules.
+        """
+        now = datetime.now().time()
+        if self.on <= self.off:
+            return self.on <= now < self.off
+        # Overnight schedule (e.g., on=22:00, off=6:30)
+        return now >= self.on or now < self.off
