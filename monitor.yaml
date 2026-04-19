@@ -16,6 +16,7 @@ sensors: # All sensors to monitor
       - 3
       - 15
       - 30
+
   CpuTemperature:
     name: CpuTemperature
     description: CPU package temperature in Celsius
@@ -24,6 +25,7 @@ sensors: # All sensors to monitor
       - 50
       - 62
       - 75
+
   MemoryUsage:
     name: MemoryUsage
     description: Memory usage percentage
@@ -32,6 +34,7 @@ sensors: # All sensors to monitor
       - 25
       - 50
       - 75
+
   DiskUsage:
     name: DiskUsage
     description: Disk usage percentage
@@ -40,6 +43,7 @@ sensors: # All sensors to monitor
       - 30
       - 55
       - 80
+
   StreamlitSessions:
     name: StreamlitSessions
     description: Number of active Streamlit sessions
@@ -50,9 +54,6 @@ sensors: # All sensors to monitor
       - 5
 
 hosts: # List of hosts to monitor
-  - hostname: orion # Raspberry Zero 2
-    details: RPi Zero 2 512 MB RAM
-
   - hostname: ares # Raspberry Pi 5
     details: RPi5 16GB 500GB SSD
 
@@ -68,6 +69,9 @@ hosts: # List of hosts to monitor
     details: NUC CoreI5 16GB 256GB SSD
     CpuTemperature:
       cmd: cat /sys/class/thermal/thermal_zone2/temp # CPU package temperature
+
+  - hostname: orion # Raspberry Zero 2
+    details: RPi Zero 2 512 MB RAM
 
   - hostname: omega # INTEL Atom C2538 16 GB (req. # synogear install)
     details: DS 1517+

@@ -22,10 +22,6 @@
           - python3-venv
           - python3-yaml
           - python3-paramiko
-          - python3-numpy
-          - python3-pil
-          - python3-spidev
-          - python3-smbus
           - python3-gpiozero
           - git
         state: present
@@ -45,7 +41,7 @@
         dest: /root/.ssh/config
         owner: root
         group: root
-        mode: '0600' 
+        mode: '0600'
 
     - name: Download the auto-update script
       ansible.builtin.get_url:
