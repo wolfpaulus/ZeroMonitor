@@ -222,7 +222,8 @@ class StreamlitSessions(Monitor):
                 _, stdout, _ = self.client.exec_command(self.cmd)
                 value = stdout.read().decode().strip()
                 if not value.isdigit():
-                    logger.info(f"{self.client.} Streamlit sessions information is not available or not a number: {value}")
+                    logger.info(
+                        f"{self.client} Streamlit sessions information is not available or not a number: {value}")
                     return -1, -1
                 sessions = round(int(value))
                 logger.debug("Streamlit sessions: %d", sessions)
