@@ -7,8 +7,7 @@ from time import sleep
 from collections import ChainMap
 from yaml import safe_load
 from monitor import Connection, Monitor
-from display import Display, NeoDisplay
-from ink import InkDisplay
+from display import NeoDisplay
 
 from log import logger
 
@@ -20,8 +19,7 @@ if __name__ == "__main__":
     except OSError as err:
         logger.error("Error loading configuration file. %s", err)
         sys.exit(1)
-    display = InkDisplay(
-        config) if Display.has_epaper() else NeoDisplay(config)
+    display = NeoDisplay(config)
 
     while True:
         for hi, host in enumerate(config.get("hosts")):  # iterate over hosts, currently 7 configured

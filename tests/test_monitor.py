@@ -4,7 +4,7 @@ from yaml import safe_load
 
 from monitor import Connection, Monitor
 
-test_host = "apollo"
+test_host = "alpha"
 
 
 def test_color_code():

@@ -207,3 +207,22 @@ class DiskUsage(Monitor):
             except ValueError as e:
                 logger.error("Error reading Disk usage: %s", e)
                 return -1, -1
+
+
+class StreamlitSessions(Monitor):
+    """Monitor class for Streamlit sessions
+    expected stdout content: something like:
+    3
+    """
+
+    def probe(self) -> tuple[int, int] | None:
+        """Probe the number of Streamlit sessions"""
+        if self.client is not None:
+            try:
+                _, stdout, _ = self.client.exec_command(self.cmd)
+                sessions = round(int(stdout.read().decode()))
+                logger.debug("Streamlit sessions: %d", sessions)
+                return sessions, Monitor.color_code(sessions, self.values)
+            except ValueError as e:
+                logger.error("Error reading Streamlit sessions: %s", e)
+                return -1, -1

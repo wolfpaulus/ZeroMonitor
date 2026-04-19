@@ -10,16 +10,10 @@
 6. Installs the required packages from requirements.txt.
 7. Launches the app with access to SPI (specific to Raspberry Pi needs).
 
-### ⚠️ SPI Access Notes (Raspberry Pi)
-The script launches the program with sudo because SPI access typically requires root (/dev/spidev0.0).
-Make sure the user is in the spi group (sudo usermod -aG spi pi), and SPI is enabled via:
-- sudo raspi-config  # Interfacing Options > SPI > Enable
-- or - sudo nano /boot/firmware/config.txt  # Add "dtparam=spi=on" to the end of the file
-
 ### 🏃 To run the launcher / updater:
 ```bash
-chmod +x update_zero_monitor.sh
-./update_zero_monitor.sh
+chmod +x auto_update_zero_monitor.sh
+./auto_update_zero_monitor.sh
 ```
 
 ## Using cron + git fetch approach to update the app
@@ -30,6 +24,6 @@ The script __auto_update_zero_monitor.sh__ runs every 5 minutes via cron and che
 2. Make it executable: ```chmod +x ~/auto_update_zero_monitor.sh```
 3. Edit crontab: ```crontab -e```
 ```
-*/5 * * * * /home/<Your Username>/update_zero_monitor.sh >> /home/<Your Username>/zero_monitor.log 2>&1
+*/5 * * * * /home/<Your Username>/auto_update_zero_monitor.sh >> /home/<Your Username>/zero_monitor.log 2>&1
 ```
 

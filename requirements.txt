@@ -1,6 +1,3 @@
 pyyaml
 paramiko
-pillow
-numpy
-spidev
-rpi_ws281x
+#rpi_ws281x

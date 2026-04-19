@@ -6,7 +6,6 @@ from abc import ABC, abstractmethod
 from time import sleep
 from datetime import datetime
 from rpi_ws281x import PixelStrip, Color
-from waveshare import DS3231
 from log import logger
 
 
@@ -21,17 +20,6 @@ class Display(ABC):
             si (int): Sensor index.
             values (tuple[int,int]): Values to display, e.g., (value, color_code).
         """
-
-    @staticmethod
-    def has_epaper() -> bool:
-        """Check if the display has an e-Paper display."""
-        try:
-            rtc = DS3231.DS3231(add=0x68)
-            logger.info("E-Paper Display Temperature %.2f Celsius", rtc.Read_Temperature())
-            return True
-        except Exception as e:
-            logger.error("Error initializing DS3231: %s", e)
-            return False
 
 
 class NeoDisplay(Display):
