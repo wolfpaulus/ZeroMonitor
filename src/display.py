@@ -1,5 +1,6 @@
 """Display management module for LED strip control.
 Author: Wolf Paulus <wolf@paulus.com>
+Version: 1.0
 """
 import sys
 from abc import ABC, abstractmethod
