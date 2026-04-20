@@ -8,7 +8,7 @@ from collections import ChainMap
 from yaml import safe_load
 from monitor import Connection, Monitor
 from display import NeoDisplay
-
+from websvr import WebDisplay
 from log import logger
 
 
@@ -33,6 +33,7 @@ if __name__ == "__main__":
         logger.error("Error loading configuration file. %s", err)
         sys.exit(1)
     display = NeoDisplay(config)
+    web_display = WebDisplay(port=8080)
 
     mode = config.get("displays", {}).get("neopixel", {}).get("mode", 1)
     if mode == 1:
@@ -65,18 +66,22 @@ if __name__ == "__main__":
                             instance = Monitor.create_instance(class_, conn, sensor.get("cmd"), sensor.get("values"))
                             if instance is not None:
                                 display.update(col, row, instance.probe())
+                                web_display.update(col, row, instance.probe())
                             else:
                                 logger.error("Sensor %s not found. Skipping sensor probe for this host.", class_)
                                 display.update(col, row, (-1, -1))
+                                web_display.update(col, row, (-1, -1))
                     else:
                         logger.error("Connection to %s failed. Skipping sensor probe(s) for this host.", hostname)
                         for si, sensor in enumerate(config.get("sensors").values()):
                             col, row = calculate_position(mode, hi, si)
                             display.update(col, row, (-1, -1))
+                            web_display.update(col, row, (-1, -1))
 
             except (OSError, ConnectionError) as err:
                 logger.error("%s : %s", host.get("hostname"), err)
                 for si, sensor in enumerate(config.get("sensors").values()):
                     col, row = calculate_position(mode, hi, si)
                     display.update(col, row, (-1, -1))
+                    web_display.update(col, row, (-1, -1))
             sleep(config.get("host_timeout", 0.5))
