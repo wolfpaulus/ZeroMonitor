@@ -55,21 +55,22 @@ if __name__ == "__main__":
     while True:
         for hi, host in enumerate(config.get("hosts")):  # iterate over hosts, currently 7 configured
             if hi >= max_hosts:
-                break  # Skipping remaining hosts.",
+                break
             hostname = host.get("hostname")
             try:
                 with Connection(hostname) as conn:
                     if conn is not None:
                         for si, sensor in enumerate(config.get("sensors").values()):  # iterate over sensors
                             if si >= max_sensors:
-                                break  # Skipping remaining sensors for this host.",
+                                break
                             col, row = calculate_position(mode, hi, si)
                             class_ = sensor.get("name")
                             sensor = ChainMap(host.get(class_, {}), sensor)
                             instance = Monitor.create_instance(class_, conn, sensor.get("cmd"), sensor.get("values"))
                             if instance is not None:
-                                display.update(col, row, instance.probe())
-                                web_display.update(col, row, instance.probe())
+                                result = instance.probe()
+                                display.update(col, row, result)
+                                web_display.update(col, row, result)
                             else:
                                 logger.error("Sensor %s not found. Skipping sensor probe for this host.", class_)
                                 display.update(col, row, (-1, -1))

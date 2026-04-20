@@ -52,7 +52,7 @@ class Connection:
         self.connect()
         return self.client
 
-    def __exit__(self, x, y, z):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
 
@@ -201,7 +201,7 @@ class DiskUsage(Monitor):
                     logger.warning(
                         "Disk usage information is not available.\n%s", texts)
                     return -1, -1
-                # Get the second last value (Used)
+                # Get the Use% column (second to last field, strip trailing '%')
                 usage = int(texts[1].split()[-2][:-1])
                 logger.debug("Disk usage: %d %%", usage)
                 return usage, Monitor.color_code(usage, self.values)

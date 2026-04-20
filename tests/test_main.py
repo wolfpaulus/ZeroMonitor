@@ -1,4 +1,4 @@
-""" " Tests for the main module"""
+"""Tests for the main module"""
 
 from main import calculate_position
 

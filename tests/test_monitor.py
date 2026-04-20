@@ -1,4 +1,4 @@
-""" " Tests for the monitor module"""
+"""Tests for the monitor module"""
 
 from yaml import safe_load
 

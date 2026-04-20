@@ -1,75 +1,184 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Python 3.12](https://img.shields.io/badge/Python-3.12-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/downloads/)
 [![run-tests](https://github.com/wolfpaulus/ZeroMonitor/actions/workflows/python-test.yml/badge.svg)](https://github.com/wolfpaulus/ZeroMonitor/actions/workflows/python-test.yml)
 
 # ZeroMonitor
 
-Using the Raspberry Pi Zero 2 W for hardware monitoring
+**Agentless infrastructure monitoring with real-time NeoPixel visualization, built for Raspberry Pi Zero 2 W.**
 
-![mon2.jpg](images/mon2.jpg)
-_ZeroMonitor with 4x8-NeoPixels_
+<p align="center">
+  <img src="images/mon2.jpg" alt="ZeroMonitor with 4x8 NeoPixel grid" width="600">
+  <br>
+  <em>ZeroMonitor with Waveshare 4&times;8 RGB LED HAT</em>
+</p>
 
-ZeroMonitor is a lightweight, customizable system monitor built for Raspberry Pi Zero 2 W.
-It checks the health of remote computers agentless (via SSH) and visualizes the results
-using a strip of NeoPixels — one (or more) Pixels per host.
+ZeroMonitor connects to remote hosts over SSH, collects system metrics, and maps health status to colors on a 32-LED NeoPixel grid — giving you an always-on, at-a-glance view of your infrastructure. No agents, no daemons, no open ports on your monitored machines.
 
-### Highlights
-- Remote monitoring with SSH (secure, non-invasive, no agents required)
-- Real-time visual feedback using NeoPixels
-- Customizable modular design (clean OOP in Python) — easy to add new monitors
-- CI/CD-style automatic updates with a simple polling strategy (cron):
-  - Check for updates from GitHub
-  - Redeploy itself if an update is available
+---
 
-## 💵 BOM (Bill of Materials) < $50
-- [Raspberry Pi Zero 2 W](https://www.raspberrypi.com/products/raspberry-pi-zero-2-w/) $15
-- [NeoPixels, e.g. 8x NeoPixel sticks](https://www.waveshare.com/product/raspberry-pi/hats/led-buttons/rgb-led-hat.htm) $11
-- [Power supply - 5V, 2A recommended](https://www.raspberrypi.com/products/micro-usb-power-supply/) $9
-- (reasonably fast) MicroSD card (8GB or larger) $8
-- (optional) [Pi Zero Case for Waveshare](https://thepihut.com/products/pi-zero-case-for-waveshare-2-13-eink-display) $9
+## Highlights
 
+- **Agentless** — monitors via SSH using key-based auth; nothing to install on target hosts
+- **Real-time visual feedback** — color-coded NeoPixel LEDs update continuously
+- **Configurable** — YAML-driven; define hosts, sensors, thresholds, and display modes
+- **Extensible** — clean OOP design makes adding new sensor types straightforward
+- **Self-updating** — CI/CD-style auto-update via cron pulls changes from GitHub and redeploys
 
-## 🌡️ Example Monitors
-- CPU temperature
-- CPU usage
-- RAM usage
-- Disk space
-- Active Streamlit sessions
+---
 
-## 🔵🟢🟠🔴🟣 Visual feedback via NeoPixels (e.g.):
-- Blue: low/idle
-- Turquoise: below normal
-- Green: medium/normal
-- Orange: above medium
-- Red: high
-- Pink: critical
-- Black/off: offline
+## Table of Contents
 
-![mon4.jpg](images/mon4.jpg)
-_ZeroMonitor with 4x8-NeoPixels_
+- [How It Works](#how-it-works)
+- [Hardware](#hardware)
+- [Sensors](#sensors)
+- [LED Color Map](#led-color-map)
+- [Display Modes](#display-modes)
+- [Web Display](#web-display)
+- [Configuration](#configuration)
+- [Installation](#installation)
+- [Auto-Update & CI/CD](#auto-update--cicd)
+- [Project Structure](#project-structure)
+- [License](#license)
 
-## 🧭 How It Works
-The Pi connects to the monitored hosts over SSH.
-Gathers system metrics using remote commands.
-Evaluates thresholds and maps state to color.
-Updates the corresponding NeoPixel LED.
+---
 
-## 🚀 Getting Started
-1. Fork the repository and clone it to your laptop.
-2. Set up the configuration file with your hosts and thresholds (see [Configuration](#-configuration)).
-3. Using [Raspberry Pi Imager](https://www.raspberrypi.com/software/), create a bootable SD card with Raspberry Pi OS and set up SSH access.
+## How It Works
 
+```
+┌──────────────┐    SSH     ┌───────────────┐
+│  Pi Zero 2 W │ ─────────▸ │  Host: alpha  │
+│              │            └───────────────┘
+│  main.py     │    SSH     ┌───────────────┐
+│  ┌────────┐  │ ─────────▸ │  Host: beta   │
+│  │ monitor│  │            └───────────────┘
+│  └───┬────┘  │    SSH     ┌───────────────┐
+│      │       │ ─────────▸ │  Host: gamma  │
+│  ┌───▼────┐  │            └───────────────┘
+│  │display │  │       ...up to 32 hosts
+│  └───┬────┘  │
+│      │       │
+│  ┌───▼────┐  │
+│  │NeoPixel│  │
+│  │ 4 × 8  │  │
+│  └────────┘  │
+└──────────────┘
+```
 
-## ⚙️ Configuration
-### create a `/home/zero/.ssh/authorized_keys` file on each monitored hosts
-For the Pi to ssh into the monitored hosts, SSH key-based authentication is required. This involves [generating an SSH key pair](https://www.ssh.com/academy/ssh/keygen) on the Pi, creating a `zero` user, and adding the public key to the `/home/zero/.ssh/authorized_keys` file on each monitored host. This way, the Pi can connect securely without needing passwords.
-__That should be the only setup required on the monitored hosts — no additional software or agents are needed, making it a non-invasive monitoring solution.__
+1. **Connect** — SSH into each monitored host using key-based authentication
+2. **Collect** — Execute remote commands to gather metrics (CPU temp, usage, RAM, disk, etc.)
+3. **Evaluate** — Compare values against configurable thresholds
+4. **Visualize** — Map each sensor's state to a color and update the corresponding NeoPixel LED
 
-### create a `/root/.ssh/config` file on the Pi Zero
-Since the monitoring script will be running as root (to access the GPIO pins for the NeoPixels) and because it's lauche as a cron job, you need to set up the SSH config for the root user on the Pi. This involves creating a `/root/.ssh/config` file that defines the hosts you want to monitor, along with their IP addresses, usernames, and SSH key paths. This allows the monitoring script to easily connect to the hosts using simple hostnames defined in the SSH config.
-To simplify SSH connections, you can set up the `/root/.ssh/config` like shown below, which allows you to use simple hostnames (e.g. `ssh alpha`) instead of full IP addresses and options every time. No usernames, ports, or identity files need to be specified in the code — just the hosts like `alpha` and `beta` defined in the SSH config.
+---
 
-#### Example SSH Config
-```plaintext
+## Hardware
+
+**Total cost about $50**
+
+| Component | Example | Price |
+|-----------|---------|------:|
+| Raspberry Pi Zero 2 W | [raspberrypi.com](https://www.raspberrypi.com/products/raspberry-pi-zero-2-w/) | ~$15 |
+| NeoPixel RGB LED HAT (4&times;8) | [Waveshare RGB LED HAT](https://www.waveshare.com/product/raspberry-pi/hats/led-buttons/rgb-led-hat.htm) | ~$11 |
+| 5V 2A Micro-USB power supply | [raspberrypi.com](https://www.raspberrypi.com/products/micro-usb-power-supply/) | ~$9 |
+| MicroSD card (8 GB+) | Any reputable brand | ~$8 |
+| Case *(optional but recommended)* | [Zebra Zero](https://c4labs.com/Zebra-Zero-for-Raspberry-Pi-Zero-Zero-Wireless--Wood-GPIO_p_578.html) | ~$11 |
+
+<p align="center">
+  <img src="images/RGB-LED-HAT-size.jpg" alt="Waveshare RGB LED HAT dimensions" width="400">
+  <img src="images/Raspberry-Pi-Zero-Dimensions-Footprint.jpg.webp" alt="Raspberry Pi Zero 2 W dimensions" width="400">
+</p>
+
+---
+
+## Sensors
+
+ZeroMonitor ships with several built-in sensor classes. Each is a subclass of `Monitor` and can be overridden per-host in the YAML config:
+
+| Sensor | Metric | Remote Command |
+|--------|--------|----------------|
+| `CpuTemperature` | CPU package temp (°C) | `cat /sys/class/thermal/thermal_zone0/temp` |
+| `CpuUsage` | CPU utilization (%) | `mpstat` pipeline |
+| `MemoryUsage` | RAM utilization (%) | `free` |
+| `DiskUsage` | Root filesystem usage (%) | `df /` |
+| `TaskCount` | Number of running tasks | `ps -e | wc -l` |
+| `StreamlitSessions` | Active Streamlit sessions | Streamlit metrics endpoint |
+
+> Adding a new sensor: subclass `Monitor`, implement `probe()`, and register the class name in `monitor.yaml`.
+
+---
+
+## LED Color Map
+
+Each LED maps a sensor's value to one of seven states based on configurable thresholds:
+
+| Color | State | Meaning |
+|-------|-------|---------|
+| 🔵 Blue | 0 | Low / idle |
+| 🔵 Cyan | 1 | Below normal |
+| 🟢 Green | 2 | Normal |
+| 🟡 Yellow | 3 | Above normal |
+| 🔴 Red | 4 | High |
+| 🟣 Pink | 5 | Critical |
+| ⚫ Off | -1 | Offline / error |
+
+<p align="center">
+  <img src="images/mon4.jpg" alt="ZeroMonitor LEDs in action" width="600">
+  <br>
+  <em>LEDs displaying live health status across multiple hosts</em>
+</p>
+
+---
+
+## Display Modes
+
+The 4-row &times; 8-column NeoPixel grid supports four layout modes:
+
+| Mode | Layout | Capacity |
+|------|--------|----------|
+| `1` | Single host | 1 host &times; 32 metrics |
+| `2` | Horizontal | 4 hosts &times; 8 metrics (one row per host) |
+| `3` | Vertical | 8 hosts &times; 4 metrics (one column per host) |
+| `4` | Grid | 32 hosts &times; 1 metric (one pixel per host) |
+
+---
+
+### Web Display
+
+ZeroMonitor also serves a live HTML replica of the NeoPixel grid via a built-in web server (`websvr.py`). The `WebDisplay` class runs an HTTP server on port 80 in a background thread and renders the 4&times;8 grid as colored circles in the browser — complete with host and sensor labels that adapt to the configured display mode. The page auto-refreshes every 10 seconds.
+
+No additional dependencies required — it uses Python's standard library `http.server`.
+
+```
+http://<Pi's IP address>/
+```
+
+<p align="center">
+  <img src="images/web.jpg" alt="ZeroMonitor Web Display" width="600">
+  <br>
+  <em>Browser-based replica of the NeoPixel grid with host and sensor labels</em>
+</p>
+
+## Configuration
+
+### 1. SSH Key Setup (on monitored hosts)
+
+ZeroMonitor requires SSH key-based authentication. [Generate an SSH key pair](https://www.ssh.com/academy/ssh/keygen) on the Pi, create a dedicated user (e.g. `zero`) on each target host, and add the Pi's public key:
+
+```bash
+# On each monitored host
+mkdir -p /home/zero/.ssh
+echo "<Pi's public key>" >> /home/zero/.ssh/authorized_keys
+chmod 600 /home/zero/.ssh/authorized_keys
+```
+.. or maybe you already have SSH keys set up for your hosts — just ensure the Pi can connect passwordlessly.
+
+> **This is the only setup required on monitored hosts.** No agents, daemons, or additional software needed.
+
+### 2. SSH Config (on the Pi)
+
+Since the monitoring script runs as root (required for GPIO access to the NeoPixels) and is launched via cron, create `/root/.ssh/config` to simplify connections:
+
+```
 Host alpha
     User zero
     Port 22
@@ -83,99 +192,156 @@ Host beta
     IdentityFile ~/.ssh/id_rsa
 ```
 
-### Monitoring Configuration
-The monitoring configuration is defined in a YAML file (e.g. `config.yaml`) that specifies the hosts to monitor, the metrics to check, and the thresholds for each state. This allows for easy customization without modifying the code. Each host can have multiple monitors (e.g. CPU temp, CPU usage, RAM usage) with their own thresholds and corresponding colors.
+This lets the code reference hosts by alias (e.g. `alpha`, `beta`) with no hardcoded IPs, ports, or credentials.
 
-![RGB-LED-HAT-size.jpg](images/RGB-LED-HAT-size.jpg)
+### 3. Monitoring Configuration (`monitor.yaml`)
 
-#### Mode
-The 4 rows 8 columns of NeoPixels can be used to monitor:
-- mode = 1 : "single host mode" with up to 32 metrics for one host (one pixel per metric)
-- mode = 2 : "horizontal mode" with up to 4 hosts with 8 metrics each (one row per host
-- mode = 3 : "vertical mode" with up to 8 hosts with 4 metrics each (one column per host)
-- mode = 4 : up to 32 hosts with one metric each (one pixel per host)
+All monitoring behavior is defined in a single YAML file — hosts, sensors, thresholds, display settings:
 
-
-### Example Config
 ```yaml
-# Configuration file for monitoring systems' health and performance
 displays:
   neopixel:
-    brightness: 127 # Brightness of the strip (24-255)
-    sensor_timeout: 1 # Pause after probing a sensor
-    off_: "20:00" # Turn off at 20:00, on at 6:30
-    on_: "6:30" # Turn on at 6:30, off at 8:00
-    mode: 3 # up to 8 hosts in vertical mode
+    brightness: 127       # LED brightness (24–255)
+    sensor_timeout: 1     # Pause (seconds) between sensor probes
+    on_: "6:30"           # LEDs on at 6:30 AM
+    off_: "22:00"         # LEDs off at 10:00 PM
+    mode: 3               # Vertical: up to 8 hosts × 4 sensors
 
-sensors: # All sensors to monitor
+sensors:
   CpuUsage:
     name: CpuUsage
     description: CPU usage percentage
-    cmd: mpstat -P ALL 1 1 | awk '$1 == "Average:" && $2 == "all" { print 100 - $NF }' # CPU usage percentage
-    values: # idle, normal, high
-      - 3
-      - 15
-      - 30
+    cmd: mpstat -P ALL 1 1 | awk '$1 == "Average:" && $2 == "all" { print 100 - $NF }'
+    values: [3, 15, 30]   # Thresholds: idle, normal, high
 
   CpuTemperature:
     name: CpuTemperature
     description: CPU package temperature in Celsius
-    cmd: cat /sys/class/thermal/thermal_zone0/temp # CPU package temperature
-    values: # low, normal, high
-      - 50
-      - 62
-      - 75
+    cmd: cat /sys/class/thermal/thermal_zone0/temp
+    values: [50, 62, 75]  # Thresholds: low, normal, high
 
-hosts: # List of hosts to monitor
-  - hostname: alpha # Intel NUC Core i5
-    details: NUC CoreI5 16GB 256GB SSD
-    CpuTemperature:
-      cmd: cat /sys/class/thermal/thermal_zone2/temp # CPU package temperature
+  MemoryUsage:
+    name: MemoryUsage
+    description: Memory usage percentage
+    cmd: free
+    values: [25, 50, 75]
 
-  - hostname: beta # Intel NUC Core i3
-    details: NUC CoreI3 16GB 128GB SSD
+  DiskUsage:
+    name: DiskUsage
+    description: Disk usage percentage
+    cmd: df /
+    values: [30, 55, 80]
+
+hosts:
+  - hostname: alpha
+    details: NUC Core i5 16GB 256GB SSD
     CpuTemperature:
-      cmd: cat /sys/class/thermal/thermal_zone2/temp # CPU package temperature
+      cmd: cat /sys/class/thermal/thermal_zone2/temp  # Override for this host
+
+  - hostname: beta
+    details: NUC Core i3 16GB 128GB SSD
+    CpuTemperature:
+      cmd: cat /sys/class/thermal/thermal_zone2/temp
 ```
 
-![zeromon1.jpeg](images/zeromon1.jpeg)
-_-1st prototype of ZeroMonitor with two 8-NeoPixels sticks-_
+Key design choices:
+- **Per-host overrides** — any sensor command can be overridden for a specific host (e.g. different `thermal_zone` path)
+- **Three thresholds** per sensor produce six color states, giving fine-grained visual feedback
+- **Schedule** — LEDs automatically turn off at night to avoid light pollution
 
+---
 
-## ⚙️ Installation
-1. Edit the `monitor.yaml` configuration file with your hosts and thresholds.
-2. Edit the `cicd/auto_update.sh` script to point to your GitHub repo (replace `<your-username>` with your actual GitHub username).
-3. You have now two options to install ZeroMonitor on the Pi:
+## Installation
 
-### Ansible Playbook
-This ansible playbook can be used to install ZeroMonitor on a Raspberry Pi:
-[./ansible/playbooks/setup-zero_mon.yml]()
+### Prerequisites
 
-ZeroMonitor can automatically check for updates from GitHub and redeploy itself using a cron job.
-For more details, see the [./cicd/README.md](cicd/README.md) file.
+1. Flash [Raspberry Pi OS](https://www.raspberrypi.com/software/) onto a MicroSD card using Raspberry Pi Imager
+2. Enable SSH during setup
+3. Configure Wi-Fi (or Ethernet) connectivity
 
-### Manual Bootstrap
-1. ssh into the Pi
-2. Look at the ansible playbook for the required steps:
-    - install dependencies
-    - copy ssh key
-    - copy ssh config
-    - clone the repo
-    - wget the auto_update.sh script
-    - set up the cron job
+### Option A: Ansible (recommended)
 
-## True color RGB LED HAT for Raspberry Pi
+An Ansible playbook automates the full setup — dependencies, SSH keys, repo clone, cron job:
 
-![RGB-LED-HAT-size.jpg](./images/RGB-LED-HAT-size.jpg)
-![Raspberry-Pi-Zero-Dimensions-Footprint.jpg.webp](./images/Raspberry-Pi-Zero-Dimensions-Footprint.jpg.webp)
-### Description
-Accessing the RGB LED HAT for Raspberry Pi requires rpi_ws281x library installation:
 ```bash
-pip install rpi_ws281x
+ansible-playbook ansible/playbooks/setup_zero_mon.yml -i your_inventory
 ```
-Find the latest libraries here: https://github.com/jgarff/rpi_ws281x
-And the Python bindings here: https://github.com/rpi-ws281x/rpi-ws281x-python
 
-rpi_ws281x introduces a new class called `PixelStrip` which is used to control the strip.
-The `PixelStrip` class is initialized with the number of pixels, the GPIO pin to use, and the pixel format.
-It defaults to using the GPIO pin 18 and the WS2811 pixel format.
+See [`ansible/playbooks/setup_zero_mon.yml`](ansible/playbooks/setup_zero_mon.yml) for the full playbook.
+
+### Option B: Manual Setup
+
+1. SSH into the Pi
+2. Install system dependencies:
+   ```bash
+   sudo apt update && sudo apt install -y sysstat git python3-pip python3-venv
+   ```
+3. Clone the repo:
+   ```bash
+   sudo git clone https://github.com/wolfpaulus/ZeroMonitor.git /opt/ZeroMonitor
+   cd /opt/ZeroMonitor
+   ```
+4. Create a virtual environment and install Python dependencies:
+   ```bash
+   python3 -m venv venv --system-site-packages
+   source venv/bin/activate
+   pip install -r requirements.txt
+   ```
+5. Edit `monitor.yaml` with your hosts and thresholds
+6. Set up the auto-update cron job (see below)
+
+---
+
+## Auto-Update & CI/CD
+
+ZeroMonitor includes a self-update mechanism. A cron job runs [`cicd/auto_update_zero_monitor.sh`](cicd/auto_update_zero_monitor.sh) every few minutes, which:
+
+1. Fetches the latest changes from GitHub
+2. Checks if any files under `src/` have changed
+3. If updated: stops the running app, backs up the current version, clones fresh, and restarts
+4. If no changes: ensures the app is running (auto-restart on crash)
+5. Keeps the 3 most recent backups and cleans up older ones
+
+```bash
+# Example crontab entry (runs every 5 minutes)
+*/5 * * * * /usr/local/bin/auto_update_zero_monitor.sh >> /var/log/zero_monitor_update.log 2>&1
+```
+
+For more details, see [`cicd/README.md`](cicd/README.md).
+
+---
+
+## Project Structure
+
+```
+ZeroMonitor/
+├── src/
+│   ├── main.py          # Entry point — loads config, runs monitoring loop
+│   ├── monitor.py       # SSH connection & sensor classes (CPU, RAM, disk, etc.)
+│   ├── display.py       # NeoPixel LED strip driver
+│   ├── websvr.py        # Built-in web server (HTML grid replica)
+│   └── log.py           # Logging configuration
+├── tests/
+│   ├── test_main.py     # Tests for position calculation
+│   └── test_monitor.py  # Tests for sensor color coding & probing
+├── ansible/
+│   └── playbooks/       # Ansible deployment playbook
+├── cicd/
+│   └── auto_update_zero_monitor.sh  # Self-update script
+├── monitor.yaml         # Monitoring configuration
+├── requirements.txt     # Python dependencies
+└── .github/
+    └── workflows/       # GitHub Actions CI (lint + test)
+```
+
+<p align="center">
+  <img src="images/zeromon1.jpeg" alt="First prototype" width="500">
+  <br>
+  <em>First prototype — two 8-NeoPixel sticks</em>
+</p>
+
+---
+
+## License
+
+This project is licensed under the [GNU General Public License v3.0](LICENSE).

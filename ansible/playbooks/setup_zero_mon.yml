@@ -1,6 +1,6 @@
-# This playbook sets up the ZeroMonitor auto-update script.
-# It downloads the script from a specified URL and sets it to run every 5 minutes using cron.
-# The cron job is named "ZeroMonitor Auto-Update" and runs the script every 15 minutes.
+# This playbook sets up ZeroMonitor on a Raspberry Pi.
+# It installs dependencies, copies SSH keys, downloads the auto-update script,
+# and schedules a cron job to run it every 3 minutes.
 - name: Deploy and schedule ZeroMonitor auto-update script
   hosts: monitors
   become: yes
