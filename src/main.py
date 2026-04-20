@@ -33,7 +33,7 @@ if __name__ == "__main__":
         logger.error("Error loading configuration file. %s", err)
         sys.exit(1)
     display = NeoDisplay(config)
-    web_display = WebDisplay(port=8080)
+    web_display = WebDisplay(config)
 
     mode = config.get("displays", {}).get("neopixel", {}).get("mode", 1)
     if mode == 1:

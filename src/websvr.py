@@ -23,8 +23,11 @@ CSS_OFF = "rgb(30, 30, 30)"
 class WebDisplay(Display):
     """Display implementation that stores grid state for the web server."""
 
-    def __init__(self, port: int = 8080):
+    def __init__(self, cfg: dict, port: int = 80):
         self._grid = [[(-1, -1)] * COLS for _ in range(ROWS)]
+        self._mode = cfg.get("displays", {}).get("neopixel", {}).get("mode", 1)
+        self._hosts = [h.get("hostname", "") for h in cfg.get("hosts", [])]
+        self._sensors = [s.get("name", "") for s in cfg.get("sensors", {}).values()]
         self._port = port
         self._server = HTTPServer(("", port), _make_handler(self))
         self._thread = Thread(target=self._server.serve_forever, daemon=True)
@@ -38,14 +41,46 @@ class WebDisplay(Display):
 
     def render(self) -> str:
         """Return an HTML page representing the current grid state."""
-        cells = ""
+        col_headers, row_headers = self._labels()
+
+        # Build column header row (with empty top-left corner if row headers exist)
+        header_html = ""
+        if col_headers:
+            if row_headers:
+                header_html += '<div class="label corner"></div>\n'
+            for label in col_headers:
+                header_html += f'<div class="label col-label">{label}</div>\n'
+
+        # Build grid rows
+        rows_html = ""
         for row in range(ROWS):
+            if row_headers:
+                label = row_headers[row] if row < len(row_headers) else ""
+                rows_html += f'<div class="label row-label">{label}</div>\n'
             for col in range(COLS):
                 value, color_idx = self._grid[row][col]
                 css = CSS_COLORS[color_idx] if 0 <= color_idx < len(CSS_COLORS) else CSS_OFF
                 tooltip = f"{value}" if value >= 0 else "offline"
-                cells += f'<div class="led" style="background:{css}" title="{tooltip}"></div>\n'
-        return _HTML.replace("{{CELLS}}", cells)
+                rows_html += f'<div class="led" style="background:{css}" title="{tooltip}"></div>\n'
+
+        grid_cols = COLS + (1 if row_headers else 0)
+        return (_HTML
+                .replace("{{GRID_COLS}}", str(grid_cols))
+                .replace("{{COL_HEADERS}}", header_html)
+                .replace("{{ROWS}}", rows_html))
+
+    def _labels(self) -> tuple[list[str], list[str]]:
+        """Return (column_headers, row_headers) based on the display mode.
+        Mode 1: 1 host × 32 sensors, row-wise fill — no labels
+        Mode 2: hosts own rows, sensors own columns
+        Mode 3: hosts own columns, sensors own rows
+        Mode 4: 32 hosts × 1 sensor, row-wise fill — no labels
+        """
+        if self._mode == 2:
+            return self._sensors[:COLS], self._hosts[:ROWS]
+        if self._mode == 3:
+            return self._hosts[:COLS], self._sensors[:ROWS]
+        return [], []
 
     def shutdown(self) -> None:
         self._server.shutdown()
@@ -85,11 +120,14 @@ _HTML = """\
     align-items: center;
     min-height: 100vh;
     background: #111;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif;
   }
   .grid {
     display: grid;
-    grid-template-columns: repeat(8, 1fr);
+    grid-template-columns: repeat({{GRID_COLS}}, auto);
     gap: 6px;
+    align-items: center;
+    justify-items: center;
   }
   .led {
     width: 48px;
@@ -97,11 +135,27 @@ _HTML = """\
     border-radius: 50%;
     box-shadow: 0 0 8px rgba(255,255,255,0.15);
   }
+  .label {
+    color: #999;
+    font-size: 11px;
+    white-space: nowrap;
+    padding: 2px 6px;
+  }
+  .col-label {
+    text-align: center;
+    transform: rotate(-45deg);
+    transform-origin: center;
+  }
+  .row-label {
+    text-align: right;
+  }
+  .corner {}
 </style>
 </head>
 <body>
 <div class="grid">
-{{CELLS}}
+{{COL_HEADERS}}
+{{ROWS}}
 </div>
 </body>
 </html>
