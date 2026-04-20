@@ -3,7 +3,6 @@ Author: Wolf Paulus <wolf@paulus.com>
 """
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from threading import Thread
-from display import Display
 from log import logger
 
 ROWS, COLS = 4, 8
@@ -20,8 +19,8 @@ CSS_COLORS = [
 CSS_OFF = "rgb(30, 30, 30)"
 
 
-class WebDisplay(Display):
-    """Display implementation that stores grid state for the web server."""
+class WebDisplay:
+    """Web-based display that mirrors the NeoPixel grid as HTML."""
 
     def __init__(self, cfg: dict, port: int = 80):
         self._grid = [[(-1, -1)] * COLS for _ in range(ROWS)]

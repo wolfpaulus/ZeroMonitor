@@ -7,21 +7,22 @@ from time import sleep
 from collections import ChainMap
 from yaml import safe_load
 from monitor import Connection, Monitor
-from display import NeoDisplay
 from websvr import WebDisplay
 from log import logger
+
+ROWS, COLS = 4, 8
 
 
 def calculate_position(mode: int, hi: int, si: int) -> tuple[int, int]:
     """Calculate the col, row position of the LED based on the mode, host index, and sensor index."""
     if mode == 1:  # one host with 32 sensors, filled row-wise
-        return si % NeoDisplay.COLS, si // NeoDisplay.COLS
+        return si % COLS, si // COLS
     elif mode == 2:  # four hosts with eight sensors each : one row per host
-        return si % NeoDisplay.COLS, hi
+        return si % COLS, hi
     elif mode == 3:  # eight hosts with four sensors each : one column per host
         return hi, si
     else:  # thirty-two hosts with one sensor each, filled row-wise
-        return hi % NeoDisplay.COLS, hi // NeoDisplay.COLS
+        return hi % COLS, hi // COLS
 
 
 if __name__ == "__main__":
@@ -32,6 +33,8 @@ if __name__ == "__main__":
     except OSError as err:
         logger.error("Error loading configuration file. %s", err)
         sys.exit(1)
+
+    from display import NeoDisplay  # noqa: E402 — imported here to avoid rpi_ws281x dependency at module level
     display = NeoDisplay(config)
     web_display = WebDisplay(config)
 
