@@ -84,6 +84,7 @@ if __name__ == "__main__":
 
             except (OSError, ConnectionError) as err:
                 logger.error("%s : %s", host.get("hostname"), err)
+                # connection failed, update all sensors for this host to error state
                 for si, sensor in enumerate(config.get("sensors").values()):
                     col, row = calculate_position(mode, hi, si)
                     display.update(col, row, (-1, -1))

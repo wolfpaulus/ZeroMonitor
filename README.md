@@ -7,12 +7,14 @@
 **Agentless infrastructure monitoring with real-time NeoPixel visualization, built for Raspberry Pi Zero 2 W.**
 
 <p align="center">
-  <img src="images/mon2.jpg" alt="ZeroMonitor with 4x8 NeoPixel grid" width="600">
+  <img src="images/mon1.jpg" alt="ZeroMonitor with 4x8 NeoPixel grid" width="600">
   <br>
   <em>ZeroMonitor with Waveshare 4&times;8 RGB LED HAT</em>
 </p>
 
 ZeroMonitor connects to remote hosts over SSH, collects system metrics, and maps health status to colors on a 32-LED NeoPixel grid — giving you an always-on, at-a-glance view of your infrastructure. No agents, no daemons, no open ports on your monitored machines.
+
+Technical deep dive: [https://wolfpaulus.com/zero-monitor/](https://wolfpaulus.com/zero-monitor/)
 
 ---
 
@@ -21,6 +23,7 @@ ZeroMonitor connects to remote hosts over SSH, collects system metrics, and maps
 - **Agentless** — monitors via SSH using key-based auth; nothing to install on target hosts
 - **Real-time visual feedback** — color-coded NeoPixel LEDs update continuously
 - **Configurable** — YAML-driven; define hosts, sensors, thresholds, and display modes
+- **Host-aware thresholds** — per-host overrides can adjust both sensor commands and threshold values
 - **Extensible** — clean OOP design makes adding new sensor types straightforward
 - **Self-updating** — CI/CD-style auto-update via cron pulls changes from GitHub and redeploys
 
@@ -84,15 +87,15 @@ ZeroMonitor connects to remote hosts over SSH, collects system metrics, and maps
 | Case *(optional but recommended)* | [Zebra Zero](https://c4labs.com/Zebra-Zero-for-Raspberry-Pi-Zero-Zero-Wireless--Wood-GPIO_p_578.html) | ~$11 |
 
 <p align="center">
-  <img src="images/RGB-LED-HAT-size.jpg" alt="Waveshare RGB LED HAT dimensions" width="400">
-  <img src="images/Raspberry-Pi-Zero-Dimensions-Footprint.jpg.webp" alt="Raspberry Pi Zero 2 W dimensions" width="400">
+  <img src="images/hat.jpg" alt="Waveshare RGB LED HAT dimensions" width="400">
+  <img src="images/dims.webp" alt="Raspberry Pi Zero 2 W dimensions" width="400">
 </p>
 
 ---
 
 ## Sensors
 
-ZeroMonitor ships with several built-in sensor classes. Each is a subclass of `Monitor` and can be overridden per-host in the YAML config:
+ZeroMonitor ships with several built-in sensor classes. Each is a subclass of `Monitor` and can be overridden per-host in the YAML config (both `cmd` and `values`):
 
 | Sensor | Metric | Remote Command |
 |--------|--------|----------------|
@@ -122,7 +125,7 @@ Each LED maps a sensor's value to one of seven states based on configurable thre
 | ⚫ Off | -1 | Offline / error |
 
 <p align="center">
-  <img src="images/mon4.jpg" alt="ZeroMonitor LEDs in action" width="600">
+  <img src="images/mon2.jpg" alt="ZeroMonitor LEDs in action" width="600">
   <br>
   <em>LEDs displaying live health status across multiple hosts</em>
 </p>
@@ -237,15 +240,22 @@ hosts:
     details: NUC Core i5 16GB 256GB SSD
     CpuTemperature:
       cmd: cat /sys/class/thermal/thermal_zone2/temp  # Override for this host
+      values: [55, 70, 85]  # Host-specific thresholds
 
   - hostname: beta
     details: NUC Core i3 16GB 128GB SSD
     CpuTemperature:
       cmd: cat /sys/class/thermal/thermal_zone2/temp
+      values: [55, 70, 85]
+
+  - hostname: orion
+    details: RPi Zero 2 512 MB RAM
+    CpuTemperature:
+      values: [45, 55, 65]  # Same sensor, different thermal envelope
 ```
 
 Key design choices:
-- **Per-host overrides** — any sensor command can be overridden for a specific host (e.g. different `thermal_zone` path)
+- **Per-host overrides** — any sensor property can be overridden for a specific host (for example `cmd` and `values`)
 - **Three thresholds** per sensor produce six color states, giving fine-grained visual feedback
 - **Schedule** — LEDs automatically turn off at night to avoid light pollution
 
@@ -335,7 +345,7 @@ ZeroMonitor/
 ```
 
 <p align="center">
-  <img src="images/zeromon1.jpeg" alt="First prototype" width="500">
+  <img src="images/proto.jpeg" alt="First prototype" width="500">
   <br>
   <em>First prototype — two 8-NeoPixel sticks</em>
 </p>
