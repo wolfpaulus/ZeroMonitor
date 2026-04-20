@@ -44,6 +44,15 @@ sensors: # All sensors to monitor
       - 55
       - 80
 
+  TaskCount:
+    name: TaskCount
+    description: Number of running tasks
+    cmd: ps -e | wc -l
+    values: # low, normal, high
+      - 120
+      - 150
+      - 200
+
   StreamlitSessions:
     name: StreamlitSessions
     description: Number of active Streamlit sessions

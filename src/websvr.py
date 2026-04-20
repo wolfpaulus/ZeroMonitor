@@ -43,6 +43,12 @@ class WebDisplay(Display):
         """Return an HTML page representing the current grid state."""
         col_headers, row_headers = self._labels()
 
+        # Pad labels to exactly COLS / ROWS so every CSS grid cell is filled
+        if col_headers:
+            col_headers += [""] * (COLS - len(col_headers))
+        if row_headers:
+            row_headers += [""] * (ROWS - len(row_headers))
+
         # Build column header row (with empty top-left corner if row headers exist)
         header_html = ""
         if col_headers:
@@ -55,8 +61,7 @@ class WebDisplay(Display):
         rows_html = ""
         for row in range(ROWS):
             if row_headers:
-                label = row_headers[row] if row < len(row_headers) else ""
-                rows_html += f'<div class="label row-label">{label}</div>\n'
+                rows_html += f'<div class="label row-label">{row_headers[row]}</div>\n'
             for col in range(COLS):
                 value, color_idx = self._grid[row][col]
                 css = CSS_COLORS[color_idx] if 0 <= color_idx < len(CSS_COLORS) else CSS_OFF

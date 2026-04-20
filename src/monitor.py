@@ -210,6 +210,30 @@ class DiskUsage(Monitor):
         return -1, -1
 
 
+class TaskCount(Monitor):
+    """Monitor class for Task count
+    expected stdout content: something like:
+    123
+    """
+
+    def probe(self) -> tuple[int, int]:
+        """Probe the number of tasks"""
+        if self.client is not None:
+            try:
+                _, stdout, _ = self.client.exec_command(self.cmd)
+                value = stdout.read().decode().strip()
+                if not value.isdigit():
+                    logger.info(
+                        "Task count information is not available or not a number: %s", value)
+                    return -1, -1
+                tasks = int(value)
+                logger.debug("Task count: %d", tasks)
+                return tasks, Monitor.color_code(tasks, self.values)
+            except ValueError as e:
+                logger.error("Error reading task count: %s", e)
+        return -1, -1
+
+
 class StreamlitSessions(Monitor):
     """Monitor class for Streamlit sessions
     expected stdout content: something like:
