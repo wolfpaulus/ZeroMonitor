@@ -147,9 +147,9 @@ _HTML = """\
     padding: 2px 6px;
   }
   .col-label {
-    text-align: center;
-    transform: rotate(-45deg);
-    transform-origin: center;
+    writing-mode: vertical-lr;
+    text-align: right;
+    min-height: 80px;
   }
   .row-label {
     text-align: right;
