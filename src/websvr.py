@@ -120,6 +120,14 @@ _HTML = """\
 <meta http-equiv="refresh" content="10">
 <style>
   body {
+    align-items: center;
+    min-height: 100vh;
+    background: #111;
+    color: #ccc;
+    font-size: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif;
+  }
+  div {
     margin: 0;
     display: flex;
     justify-content: center;
@@ -161,14 +169,20 @@ _HTML = """\
 <body>
 <h1>ZeroMonitor</h1>
 <hr/>
-<p>Mode: {{MODE}}</p>
 <div class="grid">
 {{COL_HEADERS}}
 {{ROWS}}
 </div>
-<p>Hover over LEDs for details. Page refreshes every 10 seconds.</p>
+<p>Mode: {{MODE}}<br/>Hover over LEDs for details. Page refreshes every 10 seconds.</p>
 <hr/>
-<p>&copy; 2026 ZeroMonitor by <a href="https://wolfpaulus.com/zeromonitor" style="color:#999">Wolf Paulus</a></p>
+<p>&copy; 2026 ZeroMonitor by <a href="https://wolfpaulus.com/zeromonitor" style="color: #ccc;">Wolf Paulus</a></p>
 </body>
 </html>
 """
+if __name__ == "__main__":
+    print("This module is not meant to be run directly.")
+    showdown = WebDisplay({})
+    try:
+        input("Press Enter to stop the server...\n")
+    finally:
+        showdown.shutdown()
