@@ -120,21 +120,16 @@ _HTML = """\
 <meta http-equiv="refresh" content="10">
 <style>
   body {
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    min-height: 100vh;
     background: #111;
     color: #ccc;
     font-size: 14px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif;
-  }
-  div {
     margin: 0;
-    display: flex;
     justify-content: center;
-    align-items: center;
     min-height: 100vh;
-    background: #111;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif;
   }
   .grid {
     display: grid;
@@ -167,15 +162,17 @@ _HTML = """\
 </style>
 </head>
 <body>
-<h1>ZeroMonitor</h1>
-<hr/>
+<!-- Header -->
+<h1>ZeroMonitor<hr/></h1>
+
+<!-- Grid -->
 <div class="grid">
 {{COL_HEADERS}}
 {{ROWS}}
 </div>
+<!-- Footer -->
 <p>Mode: {{MODE}}<br/>Hover over LEDs for details. Page refreshes every 10 seconds.</p>
-<hr/>
-<p>&copy; 2026 ZeroMonitor by <a href="https://wolfpaulus.com/zeromonitor" style="color: #ccc;">Wolf Paulus</a></p>
+<p>&copy; 2025-2026 ZeroMonitor by <a href="https://wolfpaulus.com/zeromonitor" style="color: #ccc;">Wolf Paulus</a></p>
 </body>
 </html>
 """
