@@ -71,14 +71,16 @@ class WebDisplay:
         return (_HTML
                 .replace("{{GRID_COLS}}", str(grid_cols))
                 .replace("{{COL_HEADERS}}", header_html)
-                .replace("{{ROWS}}", rows_html))
+                .replace("{{ROWS}}", rows_html)
+                .replace("{{MODE}}", str(self._mode))
+                )
 
     def _labels(self) -> tuple[list[str], list[str]]:
         """Return (column_headers, row_headers) based on the display mode.
-        Mode 1: 1 host × 32 sensors, row-wise fill — no labels
+        Mode 1: 1 host x 32 sensors, row-wise fill — no labels
         Mode 2: hosts own rows, sensors own columns
         Mode 3: hosts own columns, sensors own rows
-        Mode 4: 32 hosts × 1 sensor, row-wise fill — no labels
+        Mode 4: 32 hosts x 1 sensor, row-wise fill — no labels
         """
         if self._mode == 2:
             return self._sensors[:COLS], self._hosts[:ROWS]
@@ -157,10 +159,16 @@ _HTML = """\
 </style>
 </head>
 <body>
+<h1>ZeroMonitor</h1>
+<hr/>
+<p>Mode: {{MODE}}</p>
 <div class="grid">
 {{COL_HEADERS}}
 {{ROWS}}
 </div>
+<p>Hover over LEDs for details. Page refreshes every 10 seconds.</p>
+<hr/>
+<p>&copy; 2026 ZeroMonitor by <a href="https://wolfpaulus.com/zeromonitor" style="color:#999">Wolf Paulus</a></p>
 </body>
 </html>
 """
