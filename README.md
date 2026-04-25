@@ -350,6 +350,15 @@ ZeroMonitor/
   <em>First prototype — two 8-NeoPixel sticks</em>
 </p>
 
+## Inexpensive, low-maintenance, and highly extensible — that's the beauty of ZeroMonitor. It does one thing, and it does it well.
+
+
+<img src="images/bizcardholder3.webp" alt="">
+
+A clear plastic business cards display stand, fitting about 30 business cards and costing around $2, turned out to be the nice enclosure for the Pi Zero and LED HAT. The LEDs are not covered, and the stand angles them slightly upward, making them easily visible. It's a simple, cost-effective solution that keeps the setup neat and organized while allowing the monitor to be easily visible from across the room.
+
+<img src="images/bizcardholder1.webp" alt="">
+
 ---
 
 ## License
