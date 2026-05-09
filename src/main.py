@@ -1,6 +1,7 @@
 """
 Zero-Monitor Main Module
 Author: Wolf Paulus wolf@paulus.com
+Version 1.0.0
 """
 import sys
 from time import sleep
