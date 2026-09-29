@@ -76,9 +76,9 @@ hosts: # List of hosts to monitor
   - hostname: orion # Raspberry Zero 2
     details: RPi Zero 2 512 MB RAM
 
-  - hostname: omega # INTEL Atom C2538 16 GB (req. # synogear install)
-    details: DS 1517+
-    CpuUsage:
-      cmd: /var/packages/DiagnosisTool/target/tool/mpstat -P ALL 1 1 | awk '$1 == "Average:" && $2 == "all" { print 100 - $NF }' # CPU usage percentage
-    CpuTemperature:
-      cmd: cat /sys/class/hwmon/hwmon0/device/temp2_input
+  # - hostname: omega # INTEL Atom C2538 16 GB (req. # synogear install)
+  #   details: DS 1517+
+  #   CpuUsage:
+  #     cmd: /var/packages/DiagnosisTool/target/tool/mpstat -P ALL 1 1 | awk '$1 == "Average:" && $2 == "all" { print 100 - $NF }' # CPU usage percentage
+  #   CpuTemperature:
+  #     cmd: cat /sys/class/hwmon/hwmon0/device/temp2_input
