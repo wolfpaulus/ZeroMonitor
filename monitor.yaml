@@ -11,7 +11,7 @@ sensors: # All sensors to monitor
   CpuUsage:
     name: CpuUsage
     description: CPU usage percentage
-    cmd: mpstat -P ALL 1 1 | awk '$1 == "Average:" && $2 == "all" { print 100 - $NF }' # CPU usage percentage
+    cmd: mpstat -P ALL 1 1 | awk '$1 == "Average:" && $2 == "all" {printf "%.0f\n", 100 - $NF}' # CPU usage percentage
     values: # idle, normal, high
       - 3
       - 15
@@ -20,7 +20,7 @@ sensors: # All sensors to monitor
   CpuTemperature:
     name: CpuTemperature
     description: CPU package temperature in Celsius
-    cmd: cat /sys/class/thermal/thermal_zone0/temp # CPU package temperature
+    cmd: awk '{print int($1/1000)}' /sys/class/thermal/thermal_zone2/temp # CPU package temperature
     values: # low, normal, high
       - 50
       - 62
@@ -29,7 +29,7 @@ sensors: # All sensors to monitor
   MemoryUsage:
     name: MemoryUsage
     description: Memory usage percentage
-    cmd: free
+    cmd: free | awk '/^Mem:/ {printf "%.0f\n", $3/$2*100}'
     values: # low, normal, high
       - 25
       - 50
@@ -38,7 +38,7 @@ sensors: # All sensors to monitor
   DiskUsage:
     name: DiskUsage
     description: Disk usage percentage
-    cmd: df /
+    cmd: df / | awk 'NR==2 {gsub("%","",$5); print $5}'
     values: # low, normal, high
       - 30
       - 55
@@ -65,14 +65,35 @@ sensors: # All sensors to monitor
 hosts: # List of hosts to monitor
   - hostname: alpha # Intel NUC Core i5
     details: NUC CoreI5 16GB 256GB SSD
-    CpuTemperature:
-      cmd: cat /sys/class/thermal/thermal_zone2/temp # CPU package temperature
 
   - hostname: beta # Intel NUC Core i3
     details: NUC CoreI3 16GB 128GB SSD
-    CpuTemperature:
-      cmd: cat /sys/class/thermal/thermal_zone2/temp # CPU package temperature
 
+  - hostname: m6 # Apple M6
+    details: Mac mini M6 16GB 512GB SSD
+    CpuUsage:
+      cmd: top -l 1 | awk '/CPU usage/ {printf "%.0f\n", 100 - $7}'
+      values: # idle, normal, high
+        - 9
+        - 15
+        - 30
+    CpuTemperature:
+      cmd: sudo powermetrics --samplers thermal -n 1 2>/dev/null | awk -F': ' '/Current pressure level/ {v=$2; if(v=="Nominal") print 0; else if(v=="Moderate") print 1; else if(v=="Heavy") print 2; else if(v=="Trapping") print 3}'
+      values: # low, normal, high
+        - 0
+        - 1
+        - 2
+    MemoryUsage:
+      cmd: memory_pressure | awk '/System-wide memory free percentage/ {gsub("%","",$5); printf "%.0f\n", 100-$5}'
+      values: # low, normal, high
+        - 25
+        - 50
+        - 75
+    TaskCount:
+      values: # low, normal, high
+        - 650
+        - 700
+        - 750
   - hostname: orion # Raspberry Zero 2
     details: RPi Zero 2 512 MB RAM
 

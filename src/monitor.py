@@ -123,7 +123,7 @@ class Monitor(ABC):
 class CpuTemperature(Monitor):
     """Monitor class for CPU temperature
     expected stdout content: something like:
-    53692
+    53
     """
 
     def probe(self) -> tuple[int, int]:
@@ -131,7 +131,7 @@ class CpuTemperature(Monitor):
         if self.client is not None:
             try:
                 _, stdout, _ = self.client.exec_command(self.cmd)
-                temperature = round(int(stdout.read().decode()) / 1000)
+                temperature = int(stdout.read().decode())
                 logger.debug("CPU temperature: %d°C", temperature)
                 return temperature, Monitor.color_code(temperature, self.values)
             except ValueError as e:
@@ -142,7 +142,7 @@ class CpuTemperature(Monitor):
 class CpuUsage(Monitor):
     """Monitor class for CPU usage
     expected stdout content: something like:
-    2.78
+    2
     """
 
     def probe(self) -> tuple[int, int]:
@@ -150,7 +150,7 @@ class CpuUsage(Monitor):
         if self.client is not None:
             try:
                 _, stdout, _ = self.client.exec_command(self.cmd)
-                usage = round(float(stdout.read().decode()))
+                usage = int(stdout.read().decode())
                 logger.debug("CPU usage: %d %%", usage)
                 return usage, Monitor.color_code(usage, self.values)
             except ValueError as e:
@@ -161,9 +161,7 @@ class CpuUsage(Monitor):
 class MemoryUsage(Monitor):
     """Monitor class for Memory usage
     expected stdout content: something like:
-                   total        used        free      shared  buff/cache   available
-    Mem:          419228      192524       47784        3068      191792      226704
-    Swap:              0           0           0
+    10
     """
 
     def probe(self) -> tuple[int, int]:
@@ -171,12 +169,7 @@ class MemoryUsage(Monitor):
         if self.client is not None:
             try:
                 _, stdout, _ = self.client.exec_command(self.cmd)
-                texts = stdout.read().decode().split("\n")
-                if len(texts) < 3:
-                    logger.warning("Memory usage information is not available.\n%s", texts)
-                    return -1, -1
-                total, used = int(texts[1].split()[1]), int(texts[1].split()[2])
-                usage = round(used * 100 / total)  # Round to nearest integer
+                usage = int(stdout.read().decode())
                 logger.debug("Memory usage: %d %%", usage)
                 return usage, Monitor.color_code(usage, self.values)
             except ValueError as e:
@@ -187,8 +180,7 @@ class MemoryUsage(Monitor):
 class DiskUsage(Monitor):
     """Monitor class for Disk usage
     expected stdout content: something like:
-    Filesystem     1K-blocks    Used Available Use% Mounted on
-    /dev/mmcblk0p2  14719576 3318572  10753180  24% /
+    4
     """
 
     def probe(self) -> tuple[int, int]:
@@ -196,13 +188,7 @@ class DiskUsage(Monitor):
         if self.client is not None:
             try:
                 _, stdout, _ = self.client.exec_command(self.cmd)
-                texts = stdout.read().decode().split("\n")
-                if len(texts) < 2:
-                    logger.warning(
-                        "Disk usage information is not available.\n%s", texts)
-                    return -1, -1
-                # Get the Use% column (second to last field, strip trailing '%')
-                usage = int(texts[1].split()[-2][:-1])
+                usage = int(stdout.read().decode())
                 logger.debug("Disk usage: %d %%", usage)
                 return usage, Monitor.color_code(usage, self.values)
             except ValueError as e:
