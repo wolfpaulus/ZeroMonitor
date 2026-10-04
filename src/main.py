@@ -26,6 +26,19 @@ def calculate_position(mode: int, hi: int, si: int) -> tuple[int, int]:
         return hi % COLS, hi // COLS
 
 
+# class NeoDisplay:
+#     """Class to handle the NeoPixel display. This is a placeholder for the actual implementation."""
+
+#     def __init__(self, config):
+#         # Initialize the NeoPixel display based on the configuration
+#         pass
+
+#     def update(self, hi: int, si: int, values: tuple[int, int]) -> None:
+#         """Update the NeoPixel display at the specified position with the given values."""
+#         # Update the display logic here
+#         pass
+
+
 if __name__ == "__main__":
     try:
         with open("monitor.yaml", encoding='utf-8') as file:

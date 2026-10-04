@@ -94,8 +94,14 @@ hosts: # List of hosts to monitor
         - 650
         - 700
         - 750
+    StreamlitSessions:
+      cmd: /opt/homebrew/bin/wget -qO- http://localhost:8001/_stcore/metrics | awk '/^active_sessions/ {print $2}'
+
   - hostname: orion # Raspberry Zero 2
     details: RPi Zero 2 512 MB RAM
+    CpuTemperature:
+      cmd: awk '{print int($1/1000)}' /sys/class/thermal/thermal_zone0/temp # CPU package temperature
+
 
   # - hostname: omega # INTEL Atom C2538 16 GB (req. # synogear install)
   #   details: DS 1517+
