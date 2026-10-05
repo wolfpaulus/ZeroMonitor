@@ -74,9 +74,9 @@ hosts: # List of hosts to monitor
     CpuUsage:
       cmd: top -l 1 | awk '/CPU usage/ {printf "%.0f\n", 100 - $7}'
       values: # idle, normal, high
-        - 15
-        - 25
-        - 35
+        - 20
+        - 30
+        - 40
     CpuTemperature:
       cmd: sudo powermetrics --samplers thermal -n 1 2>/dev/null | awk '/Current pressure level/ {if ($NF=="Nominal") print 0; else if ($NF=="Moderate") print 1; else if ($NF=="Heavy") print 2; else if ($NF=="Trapping") print 3}'
       values: # low, normal, high
@@ -95,7 +95,7 @@ hosts: # List of hosts to monitor
         - 700
         - 750
     StreamlitSessions:
-      cmd: /opt/homebrew/bin/wget -qO- http://localhost:8001/_stcore/metrics | awk '/^active_sessions/ {print $2}'
+      cmd: curl -s http://localhost:8001/_stcore/metrics | awk '/^active_sessions/ {print $2}'
 
   - hostname: orion # Raspberry Zero 2
     details: RPi Zero 2 512 MB RAM
@@ -103,8 +103,8 @@ hosts: # List of hosts to monitor
       cmd: awk '{print int($1/1000)}' /sys/class/thermal/thermal_zone0/temp # CPU package temperature
     MemoryUsage:
       values: # low, normal, high
-        - 40
         - 50
+        - 60
         - 75
 
   # - hostname: omega # INTEL Atom C2538 16 GB (req. # synogear install)
