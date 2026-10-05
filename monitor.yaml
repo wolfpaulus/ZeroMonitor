@@ -74,9 +74,9 @@ hosts: # List of hosts to monitor
     CpuUsage:
       cmd: top -l 1 | awk '/CPU usage/ {printf "%.0f\n", 100 - $7}'
       values: # idle, normal, high
-        - 9
         - 15
-        - 30
+        - 25
+        - 35
     CpuTemperature:
       cmd: sudo powermetrics --samplers thermal -n 1 2>/dev/null | awk '/Current pressure level/ {if ($NF=="Nominal") print 0; else if ($NF=="Moderate") print 1; else if ($NF=="Heavy") print 2; else if ($NF=="Trapping") print 3}'
       values: # low, normal, high

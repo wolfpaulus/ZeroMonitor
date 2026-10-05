@@ -1,7 +1,7 @@
 """
 Zero-Monitor Main Module
 Author: Wolf Paulus wolf@paulus.com
-Version 1.0.2
+Version 1.1
 """
 import sys
 from time import sleep
@@ -71,7 +71,7 @@ if __name__ == "__main__":
             if hi >= max_hosts:
                 break
             hostname = host.get("hostname")
-            deplay = host.get("delay", 0.5)
+            deplay = host.get("delay", 1.0)
             try:
                 with Connection(hostname) as conn:
                     if conn is not None:
