@@ -39,7 +39,7 @@ class NeoDisplay(Display):
     COLOR_OFF = Color(0, 0, 0)
     COLORS = [
         Color(0, 0, 31),    # 0: blue    — low/idle
-        Color(0, 15, 15),   # 1: cyan    — below normal
+        Color(0, 15, 7),   # 1: cyan    — below normal
         Color(0, 31, 0),    # 2: green   — normal
         Color(15, 15, 0),   # 3: yellow  — above normal
         Color(31, 0, 0),    # 4: red     — high

@@ -1,4 +1,5 @@
-"""Tiny web server that renders the 4×8 NeoPixel grid as HTML.
+"""
+Tiny web server that renders the 4x8 NeoPixel grid as HTML.
 Author: Wolf Paulus <wolf@paulus.com>
 """
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -10,7 +11,7 @@ ROWS, COLS = 4, 8
 # CSS rgb strings matching NeoDisplay.COLORS indices 0–5, plus off (-1)
 CSS_COLORS = [
     "rgb(0, 0, 255)",      # 0: blue    — low/idle
-    "rgb(0, 200, 200)",    # 1: cyan    — below normal
+    "rgb(0, 200, 180)",    # 1: cyan    — below normal
     "rgb(0, 255, 0)",      # 2: green   — normal
     "rgb(200, 200, 0)",    # 3: yellow  — above normal
     "rgb(255, 0, 0)",      # 4: red     — high
