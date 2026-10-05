@@ -172,7 +172,7 @@ _HTML = """\
 </div>
 <!-- Footer -->
 <p>Mode: {{MODE}}<br/>Hover over LEDs for details. Page refreshes every 10 seconds.</p>
-<p>&copy; Version 1.1 2025-2026 ZeroMonitor by <a href="https://wolfpaulus.com/zeromonitor" style="color: #ccc;">Wolf Paulus</a></p>
+<p>&copy; Version 1.1 2025-2026 ZeroMonitor by <a href="https://wolfpaulus.com/zero-monitor" style="color: #ccc;">Wolf Paulus</a></p>
 </body>
 </html>
 """
