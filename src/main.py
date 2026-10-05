@@ -71,10 +71,12 @@ if __name__ == "__main__":
             if hi >= max_hosts:
                 break
             hostname = host.get("hostname")
+            deplay = host.get("delay", 0.5)
             try:
                 with Connection(hostname) as conn:
                     if conn is not None:
                         for si, sensor in enumerate(config.get("sensors").values()):  # iterate over sensors
+                            sleep(deplay)  # delay between sensor probes to avoid overloading the host
                             if si >= max_sensors:
                                 break
                             col, row = calculate_position(mode, hi, si)
