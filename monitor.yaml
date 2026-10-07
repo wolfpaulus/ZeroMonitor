@@ -91,9 +91,9 @@ hosts: # List of hosts to monitor
         - 75
     TaskCount:
       values: # low, normal, high
-        - 650
-        - 700
         - 750
+        - 900
+        - 999
     StreamlitSessions:
       cmd: curl -s http://localhost:8001/_stcore/metrics | awk '/^active_sessions/ {print $2}'
 
