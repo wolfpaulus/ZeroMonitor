@@ -56,7 +56,7 @@ sensors: # All sensors to monitor
   StreamlitSessions:
     name: StreamlitSessions
     description: Number of active Streamlit sessions
-    cmd: wget -qO- http://localhost:8001/_stcore/metrics | awk '/^active_sessions/ {print $2}'
+    cmd: curl -s http://localhost:8001/_stcore/metrics | awk '/^active_sessions/ {print $2}'
     values: # low, normal, high
       - 1
       - 3
