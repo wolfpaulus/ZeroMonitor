@@ -63,8 +63,8 @@ sensors: # All sensors to monitor
       - 5
 
   StreamlitErrors:
-    name: StreamlitSessions
-    description: Number of active Streamlit sessions
+    name: StreamlitErrors
+    description: Number of Streamlit app errors
     cmd: curl -s http://localhost:8001/_stcore/metrics | awk '/^app_errors_total{type="runtime_error"}/ {print $2}'
     values: # low, normal, high
       - 0
@@ -78,7 +78,7 @@ hosts: # List of hosts to monitor
   - hostname: beta # Intel NUC Core i3
     details: NUC CoreI3 16GB 128GB SSD
 
-  - hostname: m6 # Apple M6
+  - hostname: m6 # Apple MacMini m6
     details: Mac mini M6 16GB 512GB SSD
     CpuUsage:
       cmd: top -l 1 | awk '/CPU usage/ {printf "%.0f\n", 100 - $7}'
@@ -113,10 +113,3 @@ hosts: # List of hosts to monitor
         - 50
         - 60
         - 75
-
-  # - hostname: omega # INTEL Atom C2538 16 GB (req. # synogear install)
-  #   details: DS 1517+
-  #   CpuUsage:
-  #     cmd: /var/packages/DiagnosisTool/target/tool/mpstat -P ALL 1 1 | awk '$1 == "Average:" && $2 == "all" { print 100 - $NF }' # CPU usage percentage
-  #   CpuTemperature:
-  #     cmd: cat /sys/class/hwmon/hwmon0/device/temp2_input

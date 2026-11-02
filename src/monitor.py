@@ -251,7 +251,7 @@ class StreamlitErrors(Monitor):
     """
 
     def probe(self) -> tuple[int, int]:
-        """Probe the number of Streamlit sessions"""
+        """Probe the number of Streamlit App Errors"""
         if self.client is not None:
             try:
                 _, stdout, _ = self.client.exec_command(self.cmd)
@@ -261,7 +261,7 @@ class StreamlitErrors(Monitor):
                         "Streamlit error information is not available or not a number: %s", value)
                     return -1, -1
                 sessions = int(value)
-                logger.debug("Streamlit sessions: %d", sessions)
+                logger.debug("Streamlit errors: %d", sessions)
                 return sessions, Monitor.color_code(sessions, self.values)
             except ValueError as e:
                 logger.error("Error reading Streamlit sessions: %s", e)
