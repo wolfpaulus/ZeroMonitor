@@ -247,7 +247,7 @@ class StreamlitSessions(Monitor):
 class StreamlitErrors(Monitor):
     """Monitor class for Streamlit sessions
     expected stdout content: something like:
-    0
+    1
     """
 
     def probe(self) -> tuple[int, int]:

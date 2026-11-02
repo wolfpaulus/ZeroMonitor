@@ -62,6 +62,15 @@ sensors: # All sensors to monitor
       - 3
       - 5
 
+  StreamlitErrors:
+    name: StreamlitSessions
+    description: Number of active Streamlit sessions
+    cmd: curl -s http://localhost:8001/_stcore/metrics | awk '/^app_errors_total{type="runtime_error"}/ {print $2}'
+    values: # low, normal, high
+      - 0
+      - 1
+      - 2
+
 hosts: # List of hosts to monitor
   - hostname: alpha # Intel NUC Core i5
     details: NUC CoreI5 16GB 256GB SSD
@@ -94,11 +103,6 @@ hosts: # List of hosts to monitor
         - 750
         - 900
         - 999
-    StreamlitSessions:
-      cmd: curl -s http://localhost:8001/_stcore/metrics | awk '/^active_sessions/ {print $2}'
-
-    StreamlitErrors:
-      cmd: curl -s http://localhost:8001/_stcore/metrics | awk '/^app_errors_total{type="runtime_error"}/ {print $2}'
 
   - hostname: orion # Raspberry Zero 2
     details: RPi Zero 2 512 MB RAM
