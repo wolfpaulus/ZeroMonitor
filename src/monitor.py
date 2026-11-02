@@ -242,3 +242,27 @@ class StreamlitSessions(Monitor):
             except ValueError as e:
                 logger.error("Error reading Streamlit sessions: %s", e)
         return -1, -1
+
+
+class StreamlitErrors(Monitor):
+    """Monitor class for Streamlit sessions
+    expected stdout content: something like:
+    0
+    """
+
+    def probe(self) -> tuple[int, int]:
+        """Probe the number of Streamlit sessions"""
+        if self.client is not None:
+            try:
+                _, stdout, _ = self.client.exec_command(self.cmd)
+                value = stdout.read().decode().strip()
+                if not value.isdigit():
+                    logger.info(
+                        "Streamlit error information is not available or not a number: %s", value)
+                    return -1, -1
+                sessions = int(value)
+                logger.debug("Streamlit sessions: %d", sessions)
+                return sessions, Monitor.color_code(sessions, self.values)
+            except ValueError as e:
+                logger.error("Error reading Streamlit sessions: %s", e)
+        return -1, -1

@@ -97,6 +97,9 @@ hosts: # List of hosts to monitor
     StreamlitSessions:
       cmd: curl -s http://localhost:8001/_stcore/metrics | awk '/^active_sessions/ {print $2}'
 
+    StreamlitErrors:
+      cmd: curl -s http://localhost:8001/_stcore/metrics | awk '/^app_errors_total{type="runtime_error"}/ {print $2}'
+
   - hostname: orion # Raspberry Zero 2
     details: RPi Zero 2 512 MB RAM
     CpuTemperature:
