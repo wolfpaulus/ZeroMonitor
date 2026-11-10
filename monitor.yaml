@@ -71,6 +71,15 @@ sensors: # All sensors to monitor
       - 1
       - 2
 
+  StreamlitErrors_Subdomain:
+    name: StreamlitErrors
+    description: Number of Streamlit app errors
+    cmd: curl -s http://localhost:8002/_stcore/metrics | awk '/^app_errors_total{type="runtime_error"}/ {print $2}'
+    values: # low, normal, high
+      - 0
+      - 1
+      - 2
+
 hosts: # List of hosts to monitor
   - hostname: alpha # Intel NUC Core i5
     details: NUC CoreI5 16GB 256GB SSD
